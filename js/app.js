@@ -5,7 +5,7 @@
 
 import { loadDice, generateGrid } from './gridGenerator.js';
 import { loadWordList, solveGrid } from './wordSolver.js';
-import { validateInput, getBestPath } from './wordValidator.js';
+import { validateInput } from './wordValidator.js';
 import {
   getState, setGridSize, setDifficulty, setDuration, setMinWordLen, startGame, submitWord, endGame,
   getMissedWords, getFoundWordsSorted, getMaxScore,
@@ -24,6 +24,7 @@ const gridEl        = document.getElementById('grid');
 const timerDisplay  = document.getElementById('timer-display');
 const wordCountLabel= document.getElementById('word-count-label');
 const wordInput     = document.getElementById('word-input');
+const deleteBtnEl   = document.getElementById('delete-btn');
 const submitBtnEl   = document.getElementById('submit-btn');
 const inputHint     = document.getElementById('input-hint');
 const foundWordsList= document.getElementById('found-words-list');
@@ -228,6 +229,7 @@ function renderGrid(grid, cols) {
     cell.className = 'cell';
     cell.dataset.idx = idx;
     cell.textContent = letter; // 'Qu' displays as-is
+    cell.addEventListener('click', () => handleCellTap(letter, idx));
     gridEl.appendChild(cell);
   });
 }
@@ -282,9 +284,24 @@ function handleTimeUp() {
 let inputHistory = [];   // oldest → newest
 let historyIndex = -1;  // -1 = not navigating
 
+// ── Touch / cell-tap state ────────────────────────────────────────────────────
+let tapHistory = [];       // letters appended by cell taps (most recent game word)
+let tapPath    = [];       // cell indices for tapped letters (parallel to tapHistory)
+let lastInputWasTouch = false; // true when last character came from a cell tap
+
 function resetHistory() {
   inputHistory = [];
   historyIndex = -1;
+  tapHistory = [];
+  tapPath    = [];
+  lastInputWasTouch = false;
+}
+
+/** True when two grid cells are 8-directionally adjacent. */
+function isAdjacent(idx1, idx2, cols) {
+  const r1 = Math.floor(idx1 / cols), c1 = idx1 % cols;
+  const r2 = Math.floor(idx2 / cols), c2 = idx2 % cols;
+  return idx1 !== idx2 && Math.abs(r1 - r2) <= 1 && Math.abs(c1 - c2) <= 1;
 }
 
 function historyUp() {
@@ -308,12 +325,49 @@ function historyDown() {
   handleTyping();
 }
 
+// ── Cell tap (touch input) ────────────────────────────────────────────────────
+function handleCellTap(letter, idx) {
+  const st = getState();
+  if (st.phase !== 'playing') return;
+
+  // Reject if this cell is already in the current tap path
+  if (tapPath.includes(idx)) return;
+
+  // Reject if not adjacent to the previously tapped cell
+  if (tapPath.length > 0 && !isAdjacent(tapPath[tapPath.length - 1], idx, st.cols)) return;
+
+  lastInputWasTouch = true;
+  tapPath.push(idx);
+  tapHistory.push(letter);
+  wordInput.value += letter;
+  historyIndex = -1;
+  handleTyping();
+}
+
+function handleDeleteLetter() {
+  if (getState().phase !== 'playing') return;
+  if (!wordInput.value) return;
+  if (tapHistory.length > 0) {
+    const removed = tapHistory.pop();
+    tapPath.pop();
+    wordInput.value = wordInput.value.slice(0, -removed.length);
+  } else {
+    wordInput.value = wordInput.value.slice(0, -1);
+  }
+  historyIndex = -1;
+  handleTyping();
+}
+
 // ── Game input ────────────────────────────────────────────────────────────────
 function bindGameUI() {
   wordInput.addEventListener('input', () => {
-    historyIndex = -1; // typing breaks history navigation
+    tapHistory = [];        // keyboard edit invalidates tap-unit tracking
+    tapPath    = [];
+    lastInputWasTouch = false;
+    historyIndex = -1;
     handleTyping();
   });
+  deleteBtnEl.addEventListener('click', handleDeleteLetter);
   wordInput.addEventListener('keydown', e => {
     if (e.key === 'Enter') {
       e.preventDefault();
@@ -349,17 +403,18 @@ function handleTyping() {
   }
 
   const result = validateInput(typed, st.grid, st.rows, st.cols);
-  // getBestPath does its own validateInput call, but that's fine for this small grid
-  const bestPath = getBestPath(typed, st.grid, st.rows, st.cols);
 
   if (result.status === 'valid') {
     wordInput.className = 'valid-path';
     inputHint.textContent = '';
-    highlightCells(bestPath, false);
+    // When the word was built entirely by tapping, highlight the exact tapped cells.
+    // Otherwise (keyboard entry) use the first DFS-found valid path.
+    const byTap = tapPath.length > 0 && tapHistory.join('') === typed;
+    highlightCells(byTap ? tapPath : result.completePaths[0], false);
   } else {
     wordInput.className = 'invalid-path';
     inputHint.textContent = 'Invalid path — letter not reachable from here';
-    highlightCells(bestPath, true);
+    highlightCells(result.partialPaths[0], true);
   }
 }
 
@@ -372,6 +427,8 @@ function handleSubmit() {
 
   inputHistory.push(word);
   historyIndex = -1;
+  tapHistory = [];
+  tapPath    = [];
 
   const result = submitWord(word);
 
@@ -402,7 +459,7 @@ function handleSubmit() {
     highlightCells(null);
   }
 
-  wordInput.focus();
+  if (!lastInputWasTouch) wordInput.focus();
 
   // Clear hint after 1.5s
   setTimeout(() => {
