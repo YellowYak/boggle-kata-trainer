@@ -1,0 +1,392 @@
+/* === Reset & Base === */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #f8f9fa;
+  --surface: #ffffff;
+  --border: #dee2e6;
+  --text: #212529;
+  --muted: #6c757d;
+  --accent: #2563eb;
+  --accent-light: #dbeafe;
+  --success: #16a34a;
+  --success-light: #dcfce7;
+  --danger: #dc2626;
+  --danger-light: #fee2e2;
+  --warn: #d97706;
+  --warn-light: #fef3c7;
+  --radius: 8px;
+  --shadow: 0 1px 3px rgba(0,0,0,.1);
+  --shadow-md: 0 4px 12px rgba(0,0,0,.12);
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* === Layout === */
+#app {
+  width: 100%;
+  max-width: 480px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  flex: 1;
+}
+
+/* === Header === */
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+header h1 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+/* === Screens === */
+.screen { display: none; flex-direction: column; gap: 16px; }
+.screen.active { display: flex; }
+
+/* === Setup Screen === */
+.setup-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: var(--shadow);
+}
+
+.setup-card h2 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  font-size: .8rem;
+}
+
+.option-group {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.opt-btn {
+  flex: 1;
+  min-width: 80px;
+  padding: 10px 12px;
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  font-size: .9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color .15s, background .15s, color .15s;
+  text-align: center;
+}
+
+.opt-btn:hover { border-color: var(--accent); }
+.opt-btn.selected {
+  border-color: var(--accent);
+  background: var(--accent-light);
+  color: var(--accent);
+}
+
+.start-btn {
+  width: 100%;
+  padding: 14px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity .15s;
+}
+.start-btn:hover { opacity: .9; }
+.start-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+/* === Game Screen === */
+#timer-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+#timer-display {
+  font-size: 1.5rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+  transition: color .3s;
+}
+#timer-display.urgent { color: var(--danger); }
+
+#word-count-label { font-size: .9rem; color: var(--muted); }
+
+/* === Grid === */
+#grid-container {
+  display: flex;
+  justify-content: center;
+}
+
+#grid {
+  display: grid;
+  gap: 6px;
+  width: 100%;
+  max-width: 340px;
+}
+
+/* grid-cols set via JS: grid-template-columns */
+
+.cell {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 1.4rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  user-select: none;
+  transition: border-color .12s, background .12s, transform .08s;
+  box-shadow: var(--shadow);
+}
+
+.cell.path-highlight {
+  border-color: var(--accent);
+  background: var(--accent-light);
+  color: var(--accent);
+}
+
+.cell.path-highlight.last {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+  transform: scale(1.05);
+}
+
+.cell.invalid-highlight {
+  border-color: var(--danger);
+  background: var(--danger-light);
+  color: var(--danger);
+}
+
+/* === Input Area === */
+#input-area {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+#word-input-row {
+  display: flex;
+  gap: 8px;
+}
+
+#word-input {
+  flex: 1;
+  padding: 12px 14px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  outline: none;
+  background: var(--surface);
+  transition: border-color .15s;
+  letter-spacing: 2px;
+}
+
+#word-input:focus { border-color: var(--accent); }
+#word-input.valid-path { border-color: var(--success); background: var(--success-light); }
+#word-input.invalid-path { border-color: var(--danger); background: var(--danger-light); }
+
+#submit-btn {
+  padding: 12px 18px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius);
+  font-size: .95rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: opacity .15s;
+}
+#submit-btn:hover { opacity: .9; }
+
+#input-hint {
+  font-size: .8rem;
+  color: var(--muted);
+  min-height: 1.2em;
+  padding: 0 2px;
+}
+
+/* === Found Words List === */
+#found-words-area {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px;
+  box-shadow: var(--shadow);
+}
+
+#found-words-area h3 {
+  font-size: .8rem;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+#found-words-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-height: 28px;
+}
+
+.found-word-tag {
+  padding: 4px 10px;
+  border-radius: 100px;
+  font-size: .85rem;
+  font-weight: 600;
+  background: var(--success-light);
+  color: var(--success);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* === Results Screen === */
+#results-screen { gap: 16px; }
+
+.results-header {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  text-align: center;
+  box-shadow: var(--shadow);
+}
+
+.results-header h2 { font-size: 1.4rem; font-weight: 700; margin-bottom: 4px; }
+.score-line { font-size: 1rem; color: var(--muted); }
+
+.results-section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  box-shadow: var(--shadow);
+}
+
+.results-section h3 {
+  font-size: .8rem;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+
+.words-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.result-word {
+  padding: 4px 10px;
+  border-radius: 100px;
+  font-size: .85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.result-word.found { background: var(--success-light); color: var(--success); }
+.result-word.missed { background: var(--warn-light); color: var(--warn); }
+
+.results-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.results-actions button {
+  flex: 1;
+  padding: 13px;
+  border-radius: var(--radius);
+  font-size: .95rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 2px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  transition: border-color .15s, background .15s;
+}
+
+.results-actions button.primary {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+.results-actions button:hover { opacity: .9; }
+
+/* === Loading overlay === */
+#loading-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(255,255,255,.85);
+  z-index: 100;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 12px;
+}
+#loading-overlay.visible { display: flex; }
+
+.spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+#loading-msg { font-size: .95rem; color: var(--muted); }
+
+/* === Responsive tweaks === */
+@media (min-width: 400px) {
+  .cell { font-size: 1.6rem; }
+}
+
+@media (max-width: 340px) {
+  #app { padding: 10px; gap: 10px; }
+  .cell { font-size: 1.1rem; }
+}

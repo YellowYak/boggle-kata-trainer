@@ -1,0 +1,379 @@
+/**
+ * app.js
+ * Main game controller — wires up UI, state, grid generation, and validation.
+ */
+
+import { loadDice, generateGrid } from './gridGenerator.js';
+import { loadWordList, solveGrid } from './wordSolver.js';
+import { validateInput, getBestPath } from './wordValidator.js';
+import {
+  getState, setGridSize, setDifficulty, setDuration, startGame, submitWord, endGame,
+  getMissedWords, getFoundWordsSorted,
+  DIFFICULTY_CONFIG,
+} from './gameState.js';
+
+// ── DOM refs ──────────────────────────────────────────────────────────────────
+const setupScreen   = document.getElementById('setup-screen');
+const gameScreen    = document.getElementById('game-screen');
+const resultsScreen = document.getElementById('results-screen');
+const loadingOverlay = document.getElementById('loading-overlay');
+const loadingMsg    = document.getElementById('loading-msg');
+
+const startBtn      = document.getElementById('start-btn');
+const gridEl        = document.getElementById('grid');
+const timerDisplay  = document.getElementById('timer-display');
+const wordCountLabel= document.getElementById('word-count-label');
+const wordInput     = document.getElementById('word-input');
+const submitBtnEl   = document.getElementById('submit-btn');
+const inputHint     = document.getElementById('input-hint');
+const foundWordsList= document.getElementById('found-words-list');
+
+const resultFoundEl   = document.getElementById('result-found-words');
+const resultMissedEl  = document.getElementById('result-missed-words');
+const resultScoreEl   = document.getElementById('result-score');
+const resultTotalEl   = document.getElementById('result-total');
+const playAgainBtn    = document.getElementById('play-again-btn');
+const newSetupBtn     = document.getElementById('new-setup-btn');
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+(async function init() {
+  showLoading('Loading word list…');
+  await Promise.all([loadDice(), loadWordList()]);
+  hideLoading();
+  showScreen('setup');
+  bindSetupUI();
+  bindGameUI();
+  bindResultsUI();
+})();
+
+// ── Screen helpers ────────────────────────────────────────────────────────────
+function showScreen(name) {
+  setupScreen.classList.toggle('active',   name === 'setup');
+  gameScreen.classList.toggle('active',    name === 'game');
+  resultsScreen.classList.toggle('active', name === 'results');
+}
+
+function showLoading(msg) {
+  loadingMsg.textContent = msg;
+  loadingOverlay.classList.add('visible');
+}
+
+function hideLoading() {
+  loadingOverlay.classList.remove('visible');
+}
+
+// ── Setup UI ──────────────────────────────────────────────────────────────────
+function bindSetupUI() {
+  // Grid size buttons
+  document.querySelectorAll('.size-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.size-btn').forEach(b => {
+        b.classList.remove('selected');
+        b.setAttribute('aria-pressed', 'false');
+      });
+      btn.classList.add('selected');
+      btn.setAttribute('aria-pressed', 'true');
+      setGridSize(btn.dataset.size);
+    });
+  });
+
+  // Difficulty buttons
+  document.querySelectorAll('.diff-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.diff-btn').forEach(b => {
+        b.classList.remove('selected');
+        b.setAttribute('aria-pressed', 'false');
+      });
+      btn.classList.add('selected');
+      btn.setAttribute('aria-pressed', 'true');
+      setDifficulty(btn.dataset.diff);
+    });
+  });
+
+  // Duration buttons
+  document.querySelectorAll('.dur-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.dur-btn').forEach(b => {
+        b.classList.remove('selected');
+        b.setAttribute('aria-pressed', 'false');
+      });
+      btn.classList.add('selected');
+      btn.setAttribute('aria-pressed', 'true');
+      setDuration(Number(btn.dataset.dur));
+    });
+  });
+
+  startBtn.addEventListener('click', handleStartGame);
+}
+
+// ── Game generation ───────────────────────────────────────────────────────────
+async function handleStartGame() {
+  const st = getState();
+  showLoading('Generating grid…');
+
+  // Run grid gen in a microtask so the UI can update first
+  await new Promise(r => setTimeout(r, 30));
+
+  let grid, words;
+  const { rows, cols } = st;
+  const cfg = DIFFICULTY_CONFIG[st.difficulty];
+  let attempts = 0;
+  const maxAttempts = 200;
+
+  do {
+    grid = generateGrid(rows, cols);
+    words = solveGrid(grid, rows, cols);
+    attempts++;
+    if (attempts >= maxAttempts) break;
+  } while (words.size < cfg.min || words.size > cfg.max);
+
+  hideLoading();
+  startGame(grid, words);
+  renderGrid(grid, cols);
+  showScreen('game');
+  startTimer();
+  resetHistory();
+  wordInput.value = '';
+  wordInput.focus();
+  clearFoundWords();
+  updateWordCountLabel();
+}
+
+// ── Grid rendering ────────────────────────────────────────────────────────────
+function renderGrid(grid, cols) {
+  gridEl.innerHTML = '';
+  gridEl.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+
+  const flat = grid.flat();
+  flat.forEach((letter, idx) => {
+    const cell = document.createElement('div');
+    cell.className = 'cell';
+    cell.dataset.idx = idx;
+    cell.textContent = letter; // 'Qu' displays as-is
+    gridEl.appendChild(cell);
+  });
+}
+
+function highlightCells(path, isInvalid = false) {
+  document.querySelectorAll('.cell').forEach(c => {
+    c.classList.remove('path-highlight', 'last', 'invalid-highlight');
+  });
+
+  if (!path || path.length === 0) return;
+
+  path.forEach((idx, i) => {
+    const cell = gridEl.querySelector(`[data-idx="${idx}"]`);
+    if (!cell) return;
+    const isLast = i === path.length - 1;
+    if (isInvalid && isLast) {
+      cell.classList.add('invalid-highlight');
+    } else {
+      cell.classList.add('path-highlight');
+      if (isLast) cell.classList.add('last');
+    }
+  });
+}
+
+// ── Timer ─────────────────────────────────────────────────────────────────────
+function startTimer() {
+  const st = getState();
+  updateTimerDisplay(st.timeLeft);
+
+  st.timerInterval = setInterval(() => {
+    st.timeLeft--;
+    updateTimerDisplay(st.timeLeft);
+    if (st.timeLeft <= 0) {
+      clearInterval(st.timerInterval);
+      st.timerInterval = null;
+      handleTimeUp();
+    }
+  }, 1000);
+}
+
+function updateTimerDisplay(seconds) {
+  timerDisplay.textContent = String(seconds).padStart(2, '0');
+  timerDisplay.classList.toggle('urgent', seconds <= 10);
+}
+
+function handleTimeUp() {
+  endGame();
+  showResults();
+}
+
+// ── Input history (bash-style) ────────────────────────────────────────────────
+let inputHistory = [];   // oldest → newest
+let historyIndex = -1;  // -1 = not navigating
+
+function resetHistory() {
+  inputHistory = [];
+  historyIndex = -1;
+}
+
+function historyUp() {
+  if (inputHistory.length === 0) return;
+  if (historyIndex === -1) historyIndex = inputHistory.length - 1;
+  else if (historyIndex > 0) historyIndex--;
+  else return; // already at oldest
+  wordInput.value = inputHistory[historyIndex];
+  handleTyping();
+}
+
+function historyDown() {
+  if (historyIndex === -1) return; // not navigating
+  if (historyIndex < inputHistory.length - 1) {
+    historyIndex++;
+    wordInput.value = inputHistory[historyIndex];
+  } else {
+    historyIndex = -1;
+    wordInput.value = '';
+  }
+  handleTyping();
+}
+
+// ── Game input ────────────────────────────────────────────────────────────────
+function bindGameUI() {
+  wordInput.addEventListener('input', () => {
+    historyIndex = -1; // typing breaks history navigation
+    handleTyping();
+  });
+  wordInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleSubmit();
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      historyUp();
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      historyDown();
+    }
+  });
+  submitBtnEl.addEventListener('click', handleSubmit);
+}
+
+function handleTyping() {
+  const st = getState();
+  if (st.phase !== 'playing') return;
+
+  const typed = wordInput.value;
+
+  if (!typed) {
+    wordInput.className = '';
+    inputHint.textContent = '';
+    highlightCells(null);
+    return;
+  }
+
+  const result = validateInput(typed, st.grid, st.rows, st.cols);
+  // getBestPath does its own validateInput call, but that's fine for this small grid
+  const bestPath = getBestPath(typed, st.grid, st.rows, st.cols);
+
+  if (result.status === 'valid') {
+    wordInput.className = 'valid-path';
+    inputHint.textContent = '';
+    highlightCells(bestPath, false);
+  } else {
+    wordInput.className = 'invalid-path';
+    inputHint.textContent = 'Invalid path — letter not reachable from here';
+    highlightCells(bestPath, true);
+  }
+}
+
+function handleSubmit() {
+  const st = getState();
+  if (st.phase !== 'playing') return;
+
+  const word = wordInput.value.trim();
+  if (!word) return;
+
+  inputHistory.push(word);
+  historyIndex = -1;
+
+  const result = submitWord(word);
+
+  if (result === 'accepted') {
+    addFoundWordTag(word);
+    updateWordCountLabel();
+    wordInput.value = '';
+    wordInput.className = '';
+    inputHint.textContent = `"${word.toUpperCase()}" accepted!`;
+    highlightCells(null);
+  } else if (result === 'duplicate') {
+    wordInput.className = 'invalid-path';
+    inputHint.textContent = 'Already found!';
+  } else {
+    inputHint.textContent = 'Not a valid word in this grid.';
+    wordInput.value = '';
+    wordInput.className = '';
+    highlightCells(null);
+  }
+
+  wordInput.focus();
+
+  // Clear hint after 1.5s
+  setTimeout(() => {
+    if (inputHint.textContent !== '') {
+      inputHint.textContent = '';
+    }
+  }, 1500);
+}
+
+function clearFoundWords() {
+  foundWordsList.innerHTML = '';
+}
+
+function addFoundWordTag(word) {
+  const tag = document.createElement('span');
+  tag.className = 'found-word-tag';
+  tag.textContent = word.toUpperCase();
+  foundWordsList.appendChild(tag);
+}
+
+function updateWordCountLabel() {
+  const st = getState();
+  const found = st.foundWords.size;
+  const total = st.allWords ? st.allWords.size : '?';
+  wordCountLabel.textContent = `${found} / ${total} words`;
+}
+
+// ── Results ───────────────────────────────────────────────────────────────────
+function showResults() {
+  const st = getState();
+  const found = getFoundWordsSorted();
+  const missed = getMissedWords();
+
+  resultScoreEl.textContent = st.score;
+  resultTotalEl.textContent = `${found.length} of ${st.allWords.size} words found`;
+
+  resultFoundEl.innerHTML = found.map(w =>
+    `<span class="result-word found">${w.toUpperCase()}</span>`
+  ).join('');
+
+  resultMissedEl.innerHTML = missed.map(w =>
+    `<span class="result-word missed">${w.toUpperCase()}</span>`
+  ).join('');
+
+  // Clear grid highlights
+  document.querySelectorAll('.cell').forEach(c => {
+    c.classList.remove('path-highlight', 'last', 'invalid-highlight');
+  });
+
+  showScreen('results');
+}
+
+// ── Results UI ────────────────────────────────────────────────────────────────
+function bindResultsUI() {
+  playAgainBtn.addEventListener('click', () => {
+    // Replay same settings
+    handleStartGame();
+  });
+
+  newSetupBtn.addEventListener('click', () => {
+    const st = getState();
+    if (st.timerInterval) {
+      clearInterval(st.timerInterval);
+      st.timerInterval = null;
+    }
+    showScreen('setup');
+  });
+}
