@@ -10,7 +10,7 @@
 <body>
   <div id="app">
     <header>
-      <h1>Boggle Practice</h1>
+      <h1>Boggle Katas</h1>
     </header>
 
     <!-- ── Setup Screen ── -->
@@ -46,7 +46,7 @@
         </div>
       </div>
 
-      <button id="start-btn" class="start-btn">Start Game</button>
+      <button id="start-btn" class="start-btn">Start Kata</button>
 
     </section>
 
@@ -94,7 +94,8 @@
     <section id="results-screen" class="screen" aria-label="Game results">
 
       <div class="results-header">
-        <h2>Time's Up!</h2>
+        <h2 id="result-heading">Time's Up!</h2>
+        <p class="score-line" id="result-subheading"></p>
         <p class="score-line">Score: <strong id="result-score">0</strong></p>
         <p class="score-line" id="result-total"></p>
       </div>

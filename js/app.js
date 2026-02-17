@@ -28,10 +28,12 @@ const submitBtnEl   = document.getElementById('submit-btn');
 const inputHint     = document.getElementById('input-hint');
 const foundWordsList= document.getElementById('found-words-list');
 
-const resultFoundEl   = document.getElementById('result-found-words');
-const resultMissedEl  = document.getElementById('result-missed-words');
-const resultScoreEl   = document.getElementById('result-score');
-const resultTotalEl   = document.getElementById('result-total');
+const resultHeadingEl    = document.getElementById('result-heading');
+const resultSubheadingEl = document.getElementById('result-subheading');
+const resultFoundEl      = document.getElementById('result-found-words');
+const resultMissedEl     = document.getElementById('result-missed-words');
+const resultScoreEl      = document.getElementById('result-score');
+const resultTotalEl      = document.getElementById('result-total');
 const playAgainBtn    = document.getElementById('play-again-btn');
 const newSetupBtn     = document.getElementById('new-setup-btn');
 
@@ -197,7 +199,7 @@ function updateTimerDisplay(seconds) {
 
 function handleTimeUp() {
   endGame();
-  showResults();
+  showResults(false);
 }
 
 // ── Input history (bash-style) ────────────────────────────────────────────────
@@ -296,8 +298,16 @@ function handleSubmit() {
     updateWordCountLabel();
     wordInput.value = '';
     wordInput.className = '';
-    inputHint.textContent = `"${word.toUpperCase()}" accepted!`;
     highlightCells(null);
+
+    // Check for a sweep — all words found before time ran out
+    if (st.foundWords.size === st.allWords.size) {
+      endGame();
+      showResults(true);
+      return;
+    }
+
+    inputHint.textContent = `"${word.toUpperCase()}" accepted!`;
   } else if (result === 'duplicate') {
     wordInput.className = 'invalid-path';
     inputHint.textContent = 'Already found!';
@@ -337,10 +347,18 @@ function updateWordCountLabel() {
 }
 
 // ── Results ───────────────────────────────────────────────────────────────────
-function showResults() {
+function showResults(swept) {
   const st = getState();
   const found = getFoundWordsSorted();
   const missed = getMissedWords();
+
+  if (swept) {
+    resultHeadingEl.textContent = 'Flawless!';
+    resultSubheadingEl.textContent = `You found every word with ${st.timeLeft}s to spare!`;
+  } else {
+    resultHeadingEl.textContent = "Time's Up!";
+    resultSubheadingEl.textContent = '';
+  }
 
   resultScoreEl.textContent = st.score;
   resultTotalEl.textContent = `${found.length} of ${st.allWords.size} words found`;
@@ -349,9 +367,15 @@ function showResults() {
     `<span class="result-word found">${w.toUpperCase()}</span>`
   ).join('');
 
-  resultMissedEl.innerHTML = missed.map(w =>
-    `<span class="result-word missed">${w.toUpperCase()}</span>`
-  ).join('');
+  const missedSection = resultMissedEl.closest('.results-section');
+  if (swept) {
+    missedSection.hidden = true;
+  } else {
+    missedSection.hidden = false;
+    resultMissedEl.innerHTML = missed.map(w =>
+      `<span class="result-word missed">${w.toUpperCase()}</span>`
+    ).join('');
+  }
 
   // Clear grid highlights
   document.querySelectorAll('.cell').forEach(c => {
