@@ -100,11 +100,18 @@ header h1 {
   text-align: center;
 }
 
-.opt-btn:hover { border-color: var(--accent); }
+.opt-btn:hover:not(:disabled) { border-color: var(--accent); }
 .opt-btn.selected {
   border-color: var(--accent);
   background: var(--accent-light);
   color: var(--accent);
+}
+.opt-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  background: var(--bg);
+  color: var(--muted);
+  border-color: var(--border);
 }
 
 .start-btn {

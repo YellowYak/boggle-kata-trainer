@@ -79,6 +79,7 @@ function bindSetupUI() {
       btn.classList.add('selected');
       btn.setAttribute('aria-pressed', 'true');
       setGridSize(btn.dataset.size);
+      syncConstraints();
     });
   });
 
@@ -105,6 +106,7 @@ function bindSetupUI() {
       btn.classList.add('selected');
       btn.setAttribute('aria-pressed', 'true');
       setMinWordLen(Number(btn.dataset.minlen));
+      syncConstraints();
     });
   });
 
@@ -122,11 +124,60 @@ function bindSetupUI() {
   });
 
   startBtn.addEventListener('click', handleStartGame);
+
+  syncConstraints(); // apply initial disabled state
+}
+
+/**
+ * Disable options that are incompatible with the current selection,
+ * and auto-fix the active selection if it has become invalid.
+ * Rules: 2×2 grid cannot be combined with minWordLen ≥ 5.
+ */
+function syncConstraints() {
+  const st = getState();
+  const is2x2     = st.gridSize === '2x2';
+  const isLongWord = st.minWordLen >= 5;
+
+  // Disable/enable min-word-length buttons
+  document.querySelectorAll('.minlen-btn').forEach(btn => {
+    btn.disabled = is2x2 && Number(btn.dataset.minlen) >= 5;
+  });
+
+  // Disable/enable the 2×2 size button
+  document.querySelectorAll('.size-btn').forEach(btn => {
+    btn.disabled = isLongWord && btn.dataset.size === '2x2';
+  });
+
+  // Auto-fix: 2×2 selected but minWordLen is now disabled → fall back to 4
+  if (is2x2 && isLongWord) {
+    document.querySelectorAll('.minlen-btn').forEach(b => {
+      b.classList.remove('selected');
+      b.setAttribute('aria-pressed', 'false');
+    });
+    const fallback = document.querySelector('.minlen-btn[data-minlen="4"]');
+    fallback.classList.add('selected');
+    fallback.setAttribute('aria-pressed', 'true');
+    setMinWordLen(4);
+    // Re-run to update disabled states with the corrected minWordLen
+    document.querySelectorAll('.minlen-btn').forEach(btn => {
+      btn.disabled = Number(btn.dataset.minlen) >= 5;
+    });
+    document.querySelectorAll('.size-btn').forEach(btn => {
+      btn.disabled = false;
+    });
+  }
 }
 
 // ── Game generation ───────────────────────────────────────────────────────────
 async function handleStartGame() {
   const st = getState();
+
+  // Guard: 2×2 + minWordLen ≥ 5 is an impossible combination
+  if (st.gridSize === '2x2' && st.minWordLen >= 5) {
+    syncConstraints(); // re-sync UI in case it drifted
+    return;
+  }
+
   showLoading('Generating grid…');
 
   // Run grid gen in a microtask so the UI can update first
@@ -144,6 +195,15 @@ async function handleStartGame() {
     attempts++;
     if (attempts >= maxAttempts) break;
   } while (words.size < cfg.min || words.size > cfg.max);
+
+  // Fallback: if difficulty constraints couldn't be met, keep retrying
+  // until we have at least 1 word — so the game is always playable.
+  if (words.size === 0) {
+    do {
+      grid = generateGrid(rows, cols);
+      words = solveGrid(grid, rows, cols, st.minWordLen);
+    } while (words.size === 0);
+  }
 
   hideLoading();
   startGame(grid, words);

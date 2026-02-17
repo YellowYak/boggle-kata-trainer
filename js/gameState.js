@@ -7,6 +7,7 @@ export const GRID_SIZES = {
   '4x4': { rows: 4, cols: 4 },
   '3x3': { rows: 3, cols: 3 },
   '3x2': { rows: 3, cols: 2 },
+  '2x2': { rows: 2, cols: 2 },
 };
 
 export const DIFFICULTY = {
