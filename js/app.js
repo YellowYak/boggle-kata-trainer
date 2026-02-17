@@ -509,7 +509,7 @@ function showResults(reason) {
   resultTotalEl.textContent = `${found.length} of ${st.allWords.size} words found`;
 
   resultFoundEl.innerHTML = found.map(w =>
-    `<a class="result-word found" href="https://www.dictionary.com/browse/${w}?noredirect=true" target="definition">${w.toUpperCase()}</a>`
+    `<a class="result-word found" href="https://www.dictionary.com/browse/${w}?noredirect=true" target="_blank" rel="noopener noreferrer">${w.toUpperCase()}</a>`
   ).join('');
 
   const missedSection = resultMissedEl.closest('.results-section');
@@ -518,7 +518,7 @@ function showResults(reason) {
   } else {
     missedSection.hidden = false;
     resultMissedEl.innerHTML = missed.map(w =>
-      `<a class="result-word missed" href="https://www.dictionary.com/browse/${w}?noredirect=true" target="definition">${w.toUpperCase()}</a>`
+      `<a class="result-word missed" href="https://www.dictionary.com/browse/${w}?noredirect=true" target="_blank" rel="noopener noreferrer">${w.toUpperCase()}</a>`
     ).join('');
   }
 
