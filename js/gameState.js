@@ -23,12 +23,14 @@ export const DIFFICULTY_CONFIG = {
 };
 
 export const VALID_DURATIONS = [15, 30, 60];
+export const VALID_MIN_LENGTHS = [3, 4, 5, 6];
 
 const state = {
   // Setup
   gridSize: '4x4',
   difficulty: DIFFICULTY.RANDOM,
   duration: 30,        // seconds — selected by player
+  minWordLen: 4,       // minimum letters to count as a valid word
 
   // Current game
   grid: null,          // 2D array of letter strings
@@ -60,6 +62,11 @@ export function setDifficulty(diff) {
 export function setDuration(seconds) {
   if (!VALID_DURATIONS.includes(seconds)) throw new Error(`Invalid duration: ${seconds}`);
   state.duration = seconds;
+}
+
+export function setMinWordLen(len) {
+  if (!VALID_MIN_LENGTHS.includes(len)) throw new Error(`Invalid min word length: ${len}`);
+  state.minWordLen = len;
 }
 
 export function startGame(grid, allWords) {
@@ -95,6 +102,13 @@ export function getMissedWords() {
 
 export function getFoundWordsSorted() {
   return [...state.foundWords].sort();
+}
+
+export function getMaxScore() {
+  if (!state.allWords) return 0;
+  let total = 0;
+  for (const word of state.allWords) total += scoreWord(word);
+  return total;
 }
 
 /** Standard Boggle scoring by word length */

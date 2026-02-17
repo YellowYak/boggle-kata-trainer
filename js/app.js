@@ -7,8 +7,8 @@ import { loadDice, generateGrid } from './gridGenerator.js';
 import { loadWordList, solveGrid } from './wordSolver.js';
 import { validateInput, getBestPath } from './wordValidator.js';
 import {
-  getState, setGridSize, setDifficulty, setDuration, startGame, submitWord, endGame,
-  getMissedWords, getFoundWordsSorted,
+  getState, setGridSize, setDifficulty, setDuration, setMinWordLen, startGame, submitWord, endGame,
+  getMissedWords, getFoundWordsSorted, getMaxScore,
   DIFFICULTY_CONFIG,
 } from './gameState.js';
 
@@ -27,12 +27,15 @@ const wordInput     = document.getElementById('word-input');
 const submitBtnEl   = document.getElementById('submit-btn');
 const inputHint     = document.getElementById('input-hint');
 const foundWordsList= document.getElementById('found-words-list');
+const endGameBtn    = document.getElementById('end-game-btn');
 
+const resultGridEl       = document.getElementById('result-grid');
 const resultHeadingEl    = document.getElementById('result-heading');
 const resultSubheadingEl = document.getElementById('result-subheading');
 const resultFoundEl      = document.getElementById('result-found-words');
 const resultMissedEl     = document.getElementById('result-missed-words');
 const resultScoreEl      = document.getElementById('result-score');
+const resultMaxScoreEl   = document.getElementById('result-max-score');
 const resultTotalEl      = document.getElementById('result-total');
 const playAgainBtn    = document.getElementById('play-again-btn');
 const newSetupBtn     = document.getElementById('new-setup-btn');
@@ -92,6 +95,19 @@ function bindSetupUI() {
     });
   });
 
+  // Min word length buttons
+  document.querySelectorAll('.minlen-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.minlen-btn').forEach(b => {
+        b.classList.remove('selected');
+        b.setAttribute('aria-pressed', 'false');
+      });
+      btn.classList.add('selected');
+      btn.setAttribute('aria-pressed', 'true');
+      setMinWordLen(Number(btn.dataset.minlen));
+    });
+  });
+
   // Duration buttons
   document.querySelectorAll('.dur-btn').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -124,7 +140,7 @@ async function handleStartGame() {
 
   do {
     grid = generateGrid(rows, cols);
-    words = solveGrid(grid, rows, cols);
+    words = solveGrid(grid, rows, cols, st.minWordLen);
     attempts++;
     if (attempts >= maxAttempts) break;
   } while (words.size < cfg.min || words.size > cfg.max);
@@ -199,7 +215,7 @@ function updateTimerDisplay(seconds) {
 
 function handleTimeUp() {
   endGame();
-  showResults(false);
+  showResults('timeup');
 }
 
 // ── Input history (bash-style) ────────────────────────────────────────────────
@@ -251,6 +267,12 @@ function bindGameUI() {
     }
   });
   submitBtnEl.addEventListener('click', handleSubmit);
+
+  endGameBtn.addEventListener('click', () => {
+    if (getState().phase !== 'playing') return;
+    endGame();
+    showResults('manual');
+  });
 }
 
 function handleTyping() {
@@ -303,14 +325,16 @@ function handleSubmit() {
     // Check for a sweep — all words found before time ran out
     if (st.foundWords.size === st.allWords.size) {
       endGame();
-      showResults(true);
+      showResults('swept');
       return;
     }
 
     inputHint.textContent = `"${word.toUpperCase()}" accepted!`;
   } else if (result === 'duplicate') {
-    wordInput.className = 'invalid-path';
     inputHint.textContent = 'Already found!';
+    wordInput.value = '';
+    wordInput.className = '';
+    highlightCells(null);
   } else {
     inputHint.textContent = 'Not a valid word in this grid.';
     wordInput.value = '';
@@ -347,20 +371,24 @@ function updateWordCountLabel() {
 }
 
 // ── Results ───────────────────────────────────────────────────────────────────
-function showResults(swept) {
+function showResults(reason) {
   const st = getState();
   const found = getFoundWordsSorted();
   const missed = getMissedWords();
 
-  if (swept) {
+  if (reason === 'swept') {
     resultHeadingEl.textContent = 'Flawless!';
     resultSubheadingEl.textContent = `You found every word with ${st.timeLeft}s to spare!`;
+  } else if (reason === 'manual') {
+    resultHeadingEl.textContent = 'Game Over!';
+    resultSubheadingEl.textContent = '';
   } else {
     resultHeadingEl.textContent = "Time's Up!";
     resultSubheadingEl.textContent = '';
   }
 
   resultScoreEl.textContent = st.score;
+  resultMaxScoreEl.textContent = getMaxScore();
   resultTotalEl.textContent = `${found.length} of ${st.allWords.size} words found`;
 
   resultFoundEl.innerHTML = found.map(w =>
@@ -368,7 +396,7 @@ function showResults(swept) {
   ).join('');
 
   const missedSection = resultMissedEl.closest('.results-section');
-  if (swept) {
+  if (reason === 'swept') {
     missedSection.hidden = true;
   } else {
     missedSection.hidden = false;
@@ -377,10 +405,12 @@ function showResults(swept) {
     ).join('');
   }
 
-  // Clear grid highlights
-  document.querySelectorAll('.cell').forEach(c => {
+  // Clear game grid highlights, then snapshot it into the results grid
+  document.querySelectorAll('#grid .cell').forEach(c => {
     c.classList.remove('path-highlight', 'last', 'invalid-highlight');
   });
+  resultGridEl.innerHTML = gridEl.innerHTML;
+  resultGridEl.style.gridTemplateColumns = gridEl.style.gridTemplateColumns;
 
   showScreen('results');
 }

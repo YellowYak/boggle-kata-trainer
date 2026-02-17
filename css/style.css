@@ -160,6 +160,26 @@ header h1 {
 
 /* grid-cols set via JS: grid-template-columns */
 
+/* === Result grid (read-only) === */
+#result-grid-container {
+  display: flex;
+  justify-content: center;
+}
+
+#result-grid {
+  display: grid;
+  gap: 5px;
+  width: 100%;
+  max-width: 220px;
+  pointer-events: none;
+  user-select: none;
+}
+
+#result-grid .cell {
+  font-size: 1rem;
+  box-shadow: none;
+}
+
 .cell {
   aspect-ratio: 1;
   display: flex;
@@ -170,7 +190,6 @@ header h1 {
   border-radius: var(--radius);
   font-size: 1.4rem;
   font-weight: 700;
-  text-transform: uppercase;
   user-select: none;
   transition: border-color .12s, background .12s, transform .08s;
   box-shadow: var(--shadow);
@@ -269,6 +288,20 @@ header h1 {
   gap: 6px;
   min-height: 28px;
 }
+
+#end-game-btn {
+  align-self: center;
+  padding: 9px 20px;
+  border: none;
+  border-radius: var(--radius);
+  background: var(--danger);
+  color: #fff;
+  font-size: .9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity .15s;
+}
+#end-game-btn:hover { opacity: .8; }
 
 .found-word-tag {
   padding: 4px 10px;

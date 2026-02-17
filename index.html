@@ -33,8 +33,18 @@
           <button class="opt-btn diff-btn" data-diff="many" aria-pressed="false">Many Words</button>
         </div>
         <p style="font-size:.8rem;color:var(--muted);margin-top:4px;">
-          Few&nbsp;Words:&nbsp;2–5 &nbsp;|&nbsp; Many&nbsp;Words:&nbsp;8+
+          Random:&nbsp;1+ &nbsp;|&nbsp; Few&nbsp;Words:&nbsp;2–5 &nbsp;|&nbsp; Many&nbsp;Words:&nbsp;8+
         </p>
+      </div>
+
+      <div class="setup-card">
+        <h2>Min Word Length</h2>
+        <div class="option-group" role="group" aria-label="Minimum word length">
+          <button class="opt-btn minlen-btn" data-minlen="3" aria-pressed="false">3</button>
+          <button class="opt-btn minlen-btn selected" data-minlen="4" aria-pressed="true">4</button>
+          <button class="opt-btn minlen-btn" data-minlen="5" aria-pressed="false">5</button>
+          <button class="opt-btn minlen-btn" data-minlen="6" aria-pressed="false">6</button>
+        </div>
       </div>
 
       <div class="setup-card">
@@ -88,6 +98,8 @@
         <div id="found-words-list" aria-live="polite" aria-label="Found words"></div>
       </div>
 
+      <button id="end-game-btn">End Game</button>
+
     </section>
 
     <!-- ── Results Screen ── -->
@@ -96,8 +108,15 @@
       <div class="results-header">
         <h2 id="result-heading">Time's Up!</h2>
         <p class="score-line" id="result-subheading"></p>
-        <p class="score-line">Score: <strong id="result-score">0</strong></p>
+        <p class="score-line">Score: <strong id="result-score">0</strong> / <strong id="result-max-score">0</strong></p>
         <p class="score-line" id="result-total"></p>
+      </div>
+
+      <div class="results-section">
+        <h3>The Grid</h3>
+        <div id="result-grid-container">
+          <div id="result-grid" aria-label="Boggle grid (read only)" aria-hidden="true"></div>
+        </div>
       </div>
 
       <div class="results-section">

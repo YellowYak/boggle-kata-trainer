@@ -26,7 +26,7 @@ export async function loadWordList() {
   trieRoot = new TrieNode();
 
   for (const word of words) {
-    if (word.length < 4) continue; // Only index words length ≥4
+    if (word.length < 3) continue; // Only index words length ≥3
     let node = trieRoot;
     for (const ch of word) {
       if (!node.children[ch]) node.children[ch] = new TrieNode();
@@ -41,11 +41,11 @@ export function isWordInList(word) {
 }
 
 /**
- * Find all valid words (length ≥4) in the given grid.
+ * Find all valid words (length ≥ minWordLen) in the given grid.
  * grid: 2D array of letter strings (possibly 'Qu')
  * Returns: Set of valid word strings (lowercase)
  */
-export function solveGrid(grid, rows, cols) {
+export function solveGrid(grid, rows, cols, minWordLen = 4) {
   if (!trieRoot) throw new Error('Word list not loaded. Call loadWordList() first.');
 
   const adj = buildAdjacency(rows, cols);
@@ -55,13 +55,13 @@ export function solveGrid(grid, rows, cols) {
   // DFS from each starting cell
   for (let startIdx = 0; startIdx < flat.length; startIdx++) {
     const visited = new Uint8Array(flat.length); // fast boolean array
-    dfs(startIdx, visited, trieRoot, '', flat, adj, found);
+    dfs(startIdx, visited, trieRoot, '', flat, adj, found, minWordLen);
   }
 
   return found;
 }
 
-function dfs(idx, visited, trieNode, currentWord, flat, adj, found) {
+function dfs(idx, visited, trieNode, currentWord, flat, adj, found, minWordLen) {
   const letter = flat[idx].toLowerCase(); // e.g. 'qu' or 'a'
 
   // Walk the trie for each character in this letter (handles 'qu' as two chars)
@@ -74,14 +74,14 @@ function dfs(idx, visited, trieNode, currentWord, flat, adj, found) {
   visited[idx] = 1;
   currentWord += letter;
 
-  if (currentWord.length >= 4 && node.isWord) {
+  if (currentWord.length >= minWordLen && node.isWord) {
     found.add(currentWord);
   }
 
   // Continue DFS to adjacent unvisited cells
   for (const nextIdx of adj[idx]) {
     if (!visited[nextIdx]) {
-      dfs(nextIdx, visited, node, currentWord, flat, adj, found);
+      dfs(nextIdx, visited, node, currentWord, flat, adj, found, minWordLen);
     }
   }
 
