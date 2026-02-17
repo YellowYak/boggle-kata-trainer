@@ -59,6 +59,12 @@ header h1 {
 .screen.active { display: flex; }
 
 /* === Setup Screen === */
+.setup-intro {
+  font-size: .9rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
 .setup-card {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -161,8 +167,8 @@ header h1 {
 #grid {
   display: grid;
   gap: 6px;
-  width: 100%;
-  max-width: 340px;
+  width: fit-content;
+  margin: 0 auto;
 }
 
 /* grid-cols set via JS: grid-template-columns */
@@ -176,19 +182,22 @@ header h1 {
 #result-grid {
   display: grid;
   gap: 5px;
-  width: 100%;
-  max-width: 220px;
+  width: fit-content;
+  margin: 0 auto;
   pointer-events: none;
   user-select: none;
 }
 
 #result-grid .cell {
+  width: 48px;
+  height: 48px;
   font-size: 1rem;
   box-shadow: none;
 }
 
 .cell {
-  aspect-ratio: 1;
+  width: 72px;
+  height: 72px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -383,6 +392,8 @@ header h1 {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 1px;
+  text-decoration: none;
+  cursor: pointer;
 }
 
 .result-word.found { background: var(--success-light); color: var(--success); }

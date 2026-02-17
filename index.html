@@ -16,24 +16,30 @@
     <!-- ── Setup Screen ── -->
     <section id="setup-screen" class="screen" aria-label="Game setup">
 
+      <p class="setup-intro">
+        A <strong>Boggle kata</strong> is a small programming exercise, inspired by the martial arts concept of
+        <em>kata</em> (form), designed to help a player hone their skills through practice and
+        repetition. The goal is to build "muscle memory" for solving specific Boggle patterns.
+      </p>
+
       <div class="setup-card">
         <h2>Grid Size</h2>
         <div class="option-group" role="group" aria-label="Grid size">
-          <button class="opt-btn size-btn selected" data-size="4x4" aria-pressed="true">4 × 4</button>
-          <button class="opt-btn size-btn" data-size="3x3" aria-pressed="false">3 × 3</button>
-          <button class="opt-btn size-btn" data-size="3x2" aria-pressed="false">3 × 2</button>
           <button class="opt-btn size-btn" data-size="2x2" aria-pressed="false">2 × 2</button>
+          <button class="opt-btn size-btn" data-size="3x2" aria-pressed="false">2 × 3</button>
+          <button class="opt-btn size-btn selected" data-size="3x3" aria-pressed="true">3 × 3</button>
+          <button class="opt-btn size-btn" data-size="4x4" aria-pressed="false">4 × 4</button>
         </div>
       </div>
 
       <div class="setup-card">
-        <h2>Difficulty</h2>
+        <h2>Number of Solutions</h2>
         <div class="option-group" role="group" aria-label="Difficulty">
           <button class="opt-btn diff-btn selected" data-diff="random" aria-pressed="true">Random</button>
           <button class="opt-btn diff-btn" data-diff="few" aria-pressed="false">Few Words</button>
           <button class="opt-btn diff-btn" data-diff="many" aria-pressed="false">Many Words</button>
         </div>
-        <p style="font-size:.8rem;color:var(--muted);margin-top:4px;">
+        <p style="font-size:.8rem;color:var(--muted);margin-top:3px;text-align:center">
           Random:&nbsp;1+ &nbsp;|&nbsp; Few&nbsp;Words:&nbsp;2–5 &nbsp;|&nbsp; Many&nbsp;Words:&nbsp;8+
         </p>
       </div>

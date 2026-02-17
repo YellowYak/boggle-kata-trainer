@@ -28,15 +28,15 @@ export const VALID_MIN_LENGTHS = [3, 4, 5, 6];
 
 const state = {
   // Setup
-  gridSize: '4x4',
+  gridSize: '3x3',
   difficulty: DIFFICULTY.RANDOM,
   duration: 30,        // seconds — selected by player
   minWordLen: 4,       // minimum letters to count as a valid word
 
   // Current game
   grid: null,          // 2D array of letter strings
-  rows: 4,
-  cols: 4,
+  rows: 3,
+  cols: 3,
   allWords: null,      // Set of all valid words in current grid
   foundWords: new Set(), // Words found by player this session
   score: 0,

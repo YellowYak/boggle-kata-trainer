@@ -221,7 +221,7 @@ async function handleStartGame() {
 // ── Grid rendering ────────────────────────────────────────────────────────────
 function renderGrid(grid, cols) {
   gridEl.innerHTML = '';
-  gridEl.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+  gridEl.style.gridTemplateColumns = `repeat(${cols}, auto)`;
 
   const flat = grid.flat();
   flat.forEach((letter, idx) => {
@@ -509,7 +509,7 @@ function showResults(reason) {
   resultTotalEl.textContent = `${found.length} of ${st.allWords.size} words found`;
 
   resultFoundEl.innerHTML = found.map(w =>
-    `<span class="result-word found">${w.toUpperCase()}</span>`
+    `<a class="result-word found" href="https://www.dictionary.com/browse/${w}?noredirect=true" target="definition">${w.toUpperCase()}</a>`
   ).join('');
 
   const missedSection = resultMissedEl.closest('.results-section');
@@ -518,7 +518,7 @@ function showResults(reason) {
   } else {
     missedSection.hidden = false;
     resultMissedEl.innerHTML = missed.map(w =>
-      `<span class="result-word missed">${w.toUpperCase()}</span>`
+      `<a class="result-word missed" href="https://www.dictionary.com/browse/${w}?noredirect=true" target="definition">${w.toUpperCase()}</a>`
     ).join('');
   }
 
