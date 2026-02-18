@@ -37,6 +37,7 @@ let currentMinLen = 4;
   bindMinLenButtons();
   buildGrid(currentSize);
   bindSolveButton();
+  loadFromURL();
 })();
 
 function showLoading(msg) {
@@ -172,6 +173,51 @@ function bindSolveButton() {
   solveBtn.addEventListener('click', handleSolve);
 }
 
+function updateURL() {
+  const cells = solverGrid.querySelectorAll('.grid-cell-input');
+  const gridStr = [...cells].map(c => c.value.toUpperCase()).join('');
+  const params = new URLSearchParams({ grid: gridStr, min: currentMinLen });
+  history.replaceState(null, '', '?' + params);
+}
+
+function loadFromURL() {
+  const params = new URLSearchParams(window.location.search);
+  const gridStr = params.get('grid');
+  const minStr  = params.get('min');
+  if (!gridStr) return;
+
+  const n = Math.sqrt(gridStr.length);
+  if (!Number.isInteger(n) || ![4, 5, 6].includes(n)) return;
+
+  // Activate the correct size button
+  currentSize = n;
+  document.querySelectorAll('.size-btn').forEach(btn => {
+    const isMatch = +btn.dataset.size === n;
+    btn.classList.toggle('selected', isMatch);
+    btn.setAttribute('aria-pressed', String(isMatch));
+  });
+
+  // Activate the correct min-length button (fall back silently if invalid)
+  const min = parseInt(minStr, 10);
+  if ([3, 4, 5, 6].includes(min)) {
+    currentMinLen = min;
+    document.querySelectorAll('.minlen-btn').forEach(btn => {
+      const isMatch = +btn.dataset.minlen === min;
+      btn.classList.toggle('selected', isMatch);
+      btn.setAttribute('aria-pressed', String(isMatch));
+    });
+  }
+
+  // Rebuild grid for the new size and populate cells
+  buildGrid(n);
+  const cells = solverGrid.querySelectorAll('.grid-cell-input');
+  [...gridStr.toUpperCase()].forEach((ch, i) => { if (cells[i]) cells[i].value = ch; });
+
+  // Enable solve button and run
+  updateSolveBtnState();
+  handleSolve();
+}
+
 async function handleSolve() {
   const n = currentSize;
   const cells = [...solverGrid.querySelectorAll('.grid-cell-input')];
@@ -211,6 +257,7 @@ async function handleSolve() {
   }
 
   hideLoading();
+  updateURL();
   displayResults(words);
 }
 
