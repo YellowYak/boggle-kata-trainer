@@ -1,5 +1,5 @@
 /**
- * app.js
+ * katas.js
  * Main game controller — wires up UI, state, grid generation, and validation.
  */
 

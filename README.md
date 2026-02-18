@@ -20,11 +20,12 @@ A browser-based Boggle practice app. A **Boggle kata** is a short, focused exerc
 
 ```
 BoggleKatas/
-├── index.html              # Main page (setup / game / results screens)
+├── index.html              # Landing page
+├── katas.html              # Boggle Katas (setup / game / results screens)
 ├── css/
 │   └── style.css           # Minimalist, mobile-first styles
 ├── js/
-│   ├── app.js              # UI controller — wires everything together
+│   ├── katas.js            # UI controller — wires everything together
 │   ├── gameState.js        # Central state, scoring, difficulty config
 │   ├── gridGenerator.js    # Loads dice.txt, builds grids & adjacency maps
 │   ├── wordSolver.js       # Trie-based solver, finds all valid words via DFS

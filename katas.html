@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Boggle word katas — find all words in the grid before time runs out!" />
+  <title>Boggle Katas</title>
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    .back-link {
+      font-size: .85rem;
+      font-weight: 500;
+      color: var(--muted);
+      text-decoration: none;
+      transition: color .15s;
+    }
+    .back-link:hover { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <header>
+      <h1>Boggle Katas</h1>
+      <a href="index.html" class="back-link" aria-label="Back to Boggle Tools">← All Tools</a>
+    </header>
+
+    <!-- ── Setup Screen ── -->
+    <section id="setup-screen" class="screen" aria-label="Game setup">
+
+      <p class="setup-intro">
+        A <strong>Boggle kata</strong> is a small programming exercise, inspired by the martial arts concept of
+        <em>kata</em> (form), designed to help a player hone their skills through practice and
+        repetition. The goal is to build "muscle memory" for solving specific Boggle patterns.
+      </p>
+
+      <div class="setup-card">
+        <h2>Grid Size</h2>
+        <div class="option-group" role="group" aria-label="Grid size">
+          <button class="opt-btn size-btn" data-size="2x2" aria-pressed="false">2 × 2</button>
+          <button class="opt-btn size-btn" data-size="3x2" aria-pressed="false">2 × 3</button>
+          <button class="opt-btn size-btn selected" data-size="3x3" aria-pressed="true">3 × 3</button>
+          <button class="opt-btn size-btn" data-size="4x4" aria-pressed="false">4 × 4</button>
+        </div>
+      </div>
+
+      <div class="setup-card">
+        <h2>Number of Solutions</h2>
+        <div class="option-group" role="group" aria-label="Difficulty">
+          <button class="opt-btn diff-btn selected" data-diff="random" aria-pressed="true">Random</button>
+          <button class="opt-btn diff-btn" data-diff="few" aria-pressed="false">Few Words</button>
+          <button class="opt-btn diff-btn" data-diff="many" aria-pressed="false">Many Words</button>
+        </div>
+        <p id="diff-hint" style="font-size:.8rem;color:var(--muted);margin-top:3px;text-align:center"></p>
+      </div>
+
+      <div class="setup-card">
+        <h2>Min Word Length</h2>
+        <div class="option-group" role="group" aria-label="Minimum word length">
+          <button class="opt-btn minlen-btn" data-minlen="3" aria-pressed="false">3</button>
+          <button class="opt-btn minlen-btn selected" data-minlen="4" aria-pressed="true">4</button>
+          <button class="opt-btn minlen-btn" data-minlen="5" aria-pressed="false">5</button>
+          <button class="opt-btn minlen-btn" data-minlen="6" aria-pressed="false">6</button>
+        </div>
+      </div>
+
+      <div class="setup-card">
+        <h2>Duration</h2>
+        <div class="option-group" role="group" aria-label="Game duration">
+          <button class="opt-btn dur-btn" data-dur="15" aria-pressed="false">15 sec</button>
+          <button class="opt-btn dur-btn selected" data-dur="30" aria-pressed="true">30 sec</button>
+          <button class="opt-btn dur-btn" data-dur="60" aria-pressed="false">60 sec</button>
+          <button class="opt-btn dur-btn" data-dur="untimed" aria-pressed="false">Untimed</button>
+        </div>
+      </div>
+
+      <button id="start-btn" class="start-btn">Start Kata</button>
+
+    </section>
+
+    <!-- ── Game Screen ── -->
+    <section id="game-screen" class="screen" aria-label="Game play">
+
+      <div id="timer-bar">
+        <div>
+          <span id="timer-display" aria-live="polite" aria-label="Time remaining">30</span>
+          <span id="timer-sec-label" style="font-size:.85rem;color:var(--muted);margin-left:4px;">sec</span>
+        </div>
+        <span id="word-count-label" aria-live="polite">0 / ? words</span>
+      </div>
+
+      <div id="grid-container">
+        <div id="grid" role="grid" aria-label="Boggle grid"></div>
+      </div>
+
+      <div id="input-area">
+        <div id="word-input-row">
+          <input
+            type="text"
+            id="word-input"
+            autocomplete="off"
+            autocorrect="off"
+            autocapitalize="characters"
+            spellcheck="false"
+            placeholder="Type or tap…"
+            aria-label="Word input"
+            inputmode="text"
+          />
+          <button id="delete-btn" aria-label="Delete last letter">⌫</button>
+          <button id="submit-btn" aria-label="Submit word">Enter</button>
+        </div>
+        <div id="input-hint" aria-live="polite" role="status"></div>
+      </div>
+
+      <div id="found-words-area">
+        <h3>Found Words</h3>
+        <div id="found-words-list" aria-live="polite" aria-label="Found words"></div>
+      </div>
+
+      <button id="end-game-btn">End Game</button>
+
+    </section>
+
+    <!-- ── Results Screen ── -->
+    <section id="results-screen" class="screen" aria-label="Game results">
+
+      <div class="results-header">
+        <h2 id="result-heading">Time's Up!</h2>
+        <p class="score-line" id="result-subheading"></p>
+        <p class="score-line">Score: <strong id="result-score">0</strong> / <strong id="result-max-score">0</strong></p>
+        <p class="score-line" id="result-total"></p>
+      </div>
+
+      <div class="results-section">
+        <h3>The Grid</h3>
+        <div id="result-grid-container">
+          <div id="result-grid" aria-label="Boggle grid (read only)" aria-hidden="true"></div>
+        </div>
+      </div>
+
+      <div class="results-section">
+        <h3>Words You Found</h3>
+        <div class="words-grid" id="result-found-words" aria-label="Words found by player"></div>
+      </div>
+
+      <div class="results-section">
+        <h3>Words You Missed</h3>
+        <div class="words-grid" id="result-missed-words" aria-label="Words not found"></div>
+      </div>
+
+      <div class="results-actions">
+        <button id="new-setup-btn">Change Settings</button>
+        <button id="play-again-btn" class="primary">Play Again</button>
+      </div>
+
+    </section>
+  </div>
+
+  <!-- Loading overlay -->
+  <div id="loading-overlay" role="status" aria-live="polite">
+    <div class="spinner"></div>
+    <p id="loading-msg">Loading…</p>
+  </div>
+
+  <script type="module" src="js/katas.js"></script>
+</body>
+</html>
