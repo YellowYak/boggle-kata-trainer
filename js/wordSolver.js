@@ -14,7 +14,6 @@ class TrieNode {
 }
 
 let trieRoot = null;
-let wordSet = null;
 
 export async function loadWordList() {
   if (trieRoot) return;
@@ -22,7 +21,6 @@ export async function loadWordList() {
   const text = await resp.text();
   const words = text.trim().split('\n').map(w => w.trim().toLowerCase());
 
-  wordSet = new Set(words);
   trieRoot = new TrieNode();
 
   for (const word of words) {
@@ -34,10 +32,6 @@ export async function loadWordList() {
     }
     node.isWord = true;
   }
-}
-
-export function isWordInList(word) {
-  return wordSet ? wordSet.has(word.toLowerCase()) : false;
 }
 
 /**

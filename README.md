@@ -1,8 +1,11 @@
 # Boggle Katas
 
-A browser-based Boggle practice app. A **Boggle kata** is a short, focused exercise — inspired by the martial arts concept of *kata* (form) — designed to build muscle memory for spotting words in a Boggle grid.
+A browser-based Boggle tool suite. The landing page links to two tools:
 
-## Features
+- **Boggle Katas** — a timed practice game; a *kata* is a short, focused exercise inspired by the martial arts concept of form, designed to build muscle memory for spotting words in a Boggle grid.
+- **Boggle Solver** — enter any grid to instantly see every valid word it contains, with shareable URLs.
+
+## Boggle Katas Features
 
 - **Configurable grid sizes** — 2×2, 2×3, 3×3, or 4×4
 - **Number of solutions** — Random, Few Words, or Many Words; thresholds scale with grid size (e.g. Few Words is 1–2 on 2×2, 2–5 on 3×3, 2–9 on 4×4)
@@ -16,15 +19,26 @@ A browser-based Boggle practice app. A **Boggle kata** is a short, focused exerc
 - **TWL word list** — validated against the Tournament Word List (~178,000 words)
 - **Authentic dice** — uses the 16 standard Boggle dice; *Q* is always treated as *Qu*
 
+## Boggle Solver Features
+
+- **Any grid size** — 4×4, 5×5, or 6×6
+- **Configurable minimum word length** — 3, 4, 5, or 6 letters
+- **Random Grid** — instantly fills the grid with a randomly generated Boggle layout using the authentic dice set; larger grids cycle through the 16 dice in additional shuffled passes
+- **Word length breakdown** — results show a count of words found at each length before listing them
+- **Shareable URLs** — after solving, the URL updates to encode the grid and settings (e.g. `solver.html?grid=ABCDEFGHIJKLMNOP&min=5`); loading a URL with those parameters auto-populates the grid and runs the solve immediately
+
 ## Project Structure
 
 ```
 BoggleKatas/
-├── index.html              # Main page (setup / game / results screens)
+├── index.html              # Landing page (tool hub)
+├── katas.html              # Boggle Katas (setup / game / results screens)
+├── solver.html             # Boggle Solver (enter grid, find all words)
 ├── css/
 │   └── style.css           # Minimalist, mobile-first styles
 ├── js/
-│   ├── app.js              # UI controller — wires everything together
+│   ├── katas.js            # Katas UI controller
+│   ├── solver.js           # Solver UI controller; handles URL encode/decode
 │   ├── gameState.js        # Central state, scoring, difficulty config
 │   ├── gridGenerator.js    # Loads dice.txt, builds grids & adjacency maps
 │   ├── wordSolver.js       # Trie-based solver, finds all valid words via DFS
@@ -53,7 +67,7 @@ npx serve .
 python -m http.server 8080
 ```
 
-## Gameplay
+## Boggle Katas Gameplay
 
 1. Choose a **grid size**, **number of solutions**, **minimum word length**, and **duration** on the setup screen.
 2. Click **Start Kata** — a grid is generated and the countdown begins (or play begins immediately if Untimed).
@@ -63,6 +77,13 @@ python -m http.server 8080
 4. Use **↑ / ↓** arrow keys to recall previously typed words.
 5. When time runs out (or you click **End Game**), the results screen shows your score, the words you found, and the words you missed.
 6. **Play Again** reuses the same settings; **Change Settings** returns to setup.
+
+## Boggle Solver Usage
+
+1. Choose a **grid size** and **minimum word length**.
+2. Click **Random Grid** to populate the grid automatically, or fill in letters manually.
+3. Click **Find Words**.
+4. The URL updates to reflect the current grid and settings — bookmark or share it to return to the same grid later.
 
 ## Key Algorithms
 

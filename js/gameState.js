@@ -130,7 +130,7 @@ export function getMaxScore() {
 }
 
 /** Standard Boggle scoring by word length */
-function scoreWord(word) {
+export function scoreWord(word) {
   const len = word.length;
   if (len <= 4) return 1;
   if (len === 5) return 2;

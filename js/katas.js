@@ -1,5 +1,5 @@
 /**
- * app.js
+ * katas.js
  * Main game controller — wires up UI, state, grid generation, and validation.
  */
 
@@ -70,61 +70,28 @@ function hideLoading() {
   loadingOverlay.classList.remove('visible');
 }
 
+// ── Helpers ───────────────────────────────────────────────────────────────────
+/** Wire up an exclusive toggle button group. `onSelect` receives the clicked button. */
+function bindButtonGroup(selector, onSelect) {
+  const buttons = document.querySelectorAll(selector);
+  buttons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      buttons.forEach(b => { b.classList.remove('selected'); b.setAttribute('aria-pressed', 'false'); });
+      btn.classList.add('selected');
+      btn.setAttribute('aria-pressed', 'true');
+      onSelect(btn);
+    });
+  });
+}
+
 // ── Setup UI ──────────────────────────────────────────────────────────────────
 function bindSetupUI() {
-  // Grid size buttons
-  document.querySelectorAll('.size-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.size-btn').forEach(b => {
-        b.classList.remove('selected');
-        b.setAttribute('aria-pressed', 'false');
-      });
-      btn.classList.add('selected');
-      btn.setAttribute('aria-pressed', 'true');
-      setGridSize(btn.dataset.size);
-      syncConstraints();
-    });
-  });
-
-  // Difficulty buttons
-  document.querySelectorAll('.diff-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.diff-btn').forEach(b => {
-        b.classList.remove('selected');
-        b.setAttribute('aria-pressed', 'false');
-      });
-      btn.classList.add('selected');
-      btn.setAttribute('aria-pressed', 'true');
-      setDifficulty(btn.dataset.diff);
-    });
-  });
-
-  // Min word length buttons
-  document.querySelectorAll('.minlen-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.minlen-btn').forEach(b => {
-        b.classList.remove('selected');
-        b.setAttribute('aria-pressed', 'false');
-      });
-      btn.classList.add('selected');
-      btn.setAttribute('aria-pressed', 'true');
-      setMinWordLen(Number(btn.dataset.minlen));
-      syncConstraints();
-    });
-  });
-
-  // Duration buttons
-  document.querySelectorAll('.dur-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.dur-btn').forEach(b => {
-        b.classList.remove('selected');
-        b.setAttribute('aria-pressed', 'false');
-      });
-      btn.classList.add('selected');
-      btn.setAttribute('aria-pressed', 'true');
-      const dur = btn.dataset.dur === 'untimed' ? null : Number(btn.dataset.dur);
-      setDuration(dur);
-    });
+  bindButtonGroup('.size-btn', btn => { setGridSize(btn.dataset.size); syncConstraints(); });
+  bindButtonGroup('.diff-btn', btn => setDifficulty(btn.dataset.diff));
+  bindButtonGroup('.minlen-btn', btn => { setMinWordLen(Number(btn.dataset.minlen)); syncConstraints(); });
+  bindButtonGroup('.dur-btn', btn => {
+    const dur = btn.dataset.dur === 'untimed' ? null : Number(btn.dataset.dur);
+    setDuration(dur);
   });
 
   startBtn.addEventListener('click', handleStartGame);

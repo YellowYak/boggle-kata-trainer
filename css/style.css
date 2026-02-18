@@ -1,5 +1,6 @@
 /* === Reset & Base === */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+[hidden] { display: none !important; }
 
 :root {
   --bg: #f8f9fa;
@@ -383,6 +384,24 @@ header h1 {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
+}
+
+.length-breakdown-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 12px;
+  font-size: 0.85rem;
+}
+
+.length-breakdown-table td {
+  padding: 3px 8px;
+  color: var(--text-secondary);
+}
+
+.length-breakdown-table td:first-child {
+  font-weight: 600;
+  color: var(--text);
+  width: 7rem;
 }
 
 .result-word {
