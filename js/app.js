@@ -22,6 +22,7 @@ const loadingMsg    = document.getElementById('loading-msg');
 const startBtn      = document.getElementById('start-btn');
 const gridEl        = document.getElementById('grid');
 const timerDisplay  = document.getElementById('timer-display');
+const timerSecLabel = document.getElementById('timer-sec-label');
 const wordCountLabel= document.getElementById('word-count-label');
 const wordInput     = document.getElementById('word-input');
 const deleteBtnEl   = document.getElementById('delete-btn');
@@ -120,7 +121,8 @@ function bindSetupUI() {
       });
       btn.classList.add('selected');
       btn.setAttribute('aria-pressed', 'true');
-      setDuration(Number(btn.dataset.dur));
+      const dur = btn.dataset.dur === 'untimed' ? null : Number(btn.dataset.dur);
+      setDuration(dur);
     });
   });
 
@@ -257,6 +259,15 @@ function highlightCells(path, isInvalid = false) {
 // ── Timer ─────────────────────────────────────────────────────────────────────
 function startTimer() {
   const st = getState();
+
+  if (st.duration === null) {
+    timerDisplay.textContent = '–';
+    timerDisplay.classList.remove('urgent');
+    timerSecLabel.hidden = true;
+    return;
+  }
+
+  timerSecLabel.hidden = false;
   updateTimerDisplay(st.timeLeft);
 
   st.timerInterval = setInterval(() => {

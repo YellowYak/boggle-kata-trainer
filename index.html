@@ -60,6 +60,7 @@
           <button class="opt-btn dur-btn" data-dur="15" aria-pressed="false">15 sec</button>
           <button class="opt-btn dur-btn selected" data-dur="30" aria-pressed="true">30 sec</button>
           <button class="opt-btn dur-btn" data-dur="60" aria-pressed="false">60 sec</button>
+          <button class="opt-btn dur-btn" data-dur="untimed" aria-pressed="false">Untimed</button>
         </div>
       </div>
 
@@ -73,7 +74,7 @@
       <div id="timer-bar">
         <div>
           <span id="timer-display" aria-live="polite" aria-label="Time remaining">30</span>
-          <span style="font-size:.85rem;color:var(--muted);margin-left:4px;">sec</span>
+          <span id="timer-sec-label" style="font-size:.85rem;color:var(--muted);margin-left:4px;">sec</span>
         </div>
         <span id="word-count-label" aria-live="polite">0 / ? words</span>
       </div>

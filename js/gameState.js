@@ -23,7 +23,7 @@ export const DIFFICULTY_CONFIG = {
   [DIFFICULTY.MANY]:   { min: 8,  max: Infinity },
 };
 
-export const VALID_DURATIONS = [15, 30, 60];
+export const VALID_DURATIONS = [15, 30, 60, null]; // null = untimed
 export const VALID_MIN_LENGTHS = [3, 4, 5, 6];
 
 const state = {
