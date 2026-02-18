@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- Blue rounded background -->
+  <rect width="32" height="32" rx="5" fill="#2563eb"/>
+  <!-- Four letter tiles -->
+  <rect x="3"  y="3"  width="12" height="12" rx="2" fill="white"/>
+  <rect x="17" y="3"  width="12" height="12" rx="2" fill="white"/>
+  <rect x="3"  y="17" width="12" height="12" rx="2" fill="white"/>
+  <rect x="17" y="17" width="12" height="12" rx="2" fill="white"/>
+  <!-- Letters: B O G G -->
+  <text x="9"  y="13" text-anchor="middle" font-family="system-ui,Arial,sans-serif" font-weight="800" font-size="10" fill="#2563eb">B</text>
+  <text x="23" y="13" text-anchor="middle" font-family="system-ui,Arial,sans-serif" font-weight="800" font-size="10" fill="#2563eb">O</text>
+  <text x="9"  y="27" text-anchor="middle" font-family="system-ui,Arial,sans-serif" font-weight="800" font-size="10" fill="#2563eb">G</text>
+  <text x="23" y="27" text-anchor="middle" font-family="system-ui,Arial,sans-serif" font-weight="800" font-size="10" fill="#2563eb">G</text>
+</svg>

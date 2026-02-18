@@ -7,7 +7,7 @@ A browser-based Boggle practice app. A **Boggle kata** is a short, focused exerc
 - **Configurable grid sizes** — 2×2, 2×3, 3×3, or 4×4
 - **Number of solutions** — Random (1+), Few Words (2–5), or Many Words (8+)
 - **Minimum word length** — 3, 4, 5, or 6 letters
-- **Adjustable timer** — 15, 30, or 60 seconds
+- **Adjustable timer** — 15, 30, or 60 seconds, or Untimed (no countdown; end manually or by finding every word)
 - **Real-time path validation** — grid cells highlight as you type, turning green for a valid path and red when a letter can't be reached
 - **Touch input** — tap grid tiles in sequence to build a word without triggering the on-screen keyboard; use ⌫ to remove the last tapped tile
 - **Word history navigation** — press ↑/↓ to cycle through previously submitted words, like a terminal
@@ -31,7 +31,8 @@ BoggleKatas/
 │   └── wordValidator.js    # Real-time path validation as the user types
 └── assets/
     ├── dice.txt            # 16 Boggle dice (6 faces each)
-    └── twl.txt             # TWL word list (one word per line)
+    ├── twl.txt             # TWL word list (one word per line)
+    └── favicon.svg         # SVG favicon (2×2 Boggle tile grid)
 ```
 
 ## How to Run
@@ -55,7 +56,7 @@ python -m http.server 8080
 ## Gameplay
 
 1. Choose a **grid size**, **number of solutions**, **minimum word length**, and **duration** on the setup screen.
-2. Click **Start Kata** — a grid is generated and the countdown begins.
+2. Click **Start Kata** — a grid is generated and the countdown begins (or play begins immediately if Untimed).
 3. Enter words by typing and pressing **Enter**, or by tapping tiles on the grid.
    - Green input border = valid path through the grid so far.
    - Red input border = letter can't be reached from the previous tile.
