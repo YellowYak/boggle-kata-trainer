@@ -23,6 +23,7 @@ A browser-based Boggle tool suite. The landing page links to two tools:
 
 - **Any grid size** — 4×4, 5×5, or 6×6
 - **Configurable minimum word length** — 3, 4, 5, or 6 letters
+- **Word length breakdown** — results show a count of words found at each length before listing them
 - **Shareable URLs** — after solving, the URL updates to encode the grid and settings (e.g. `solver.html?grid=ABCDEFGHIJKLMNOP&min=5`); loading a URL with those parameters auto-populates the grid and runs the solve immediately
 
 ## Project Structure
