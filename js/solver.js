@@ -6,6 +6,7 @@
 
 import { loadWordList, solveGrid } from './wordSolver.js';
 import { scoreWord } from './gameState.js';
+import { loadDice, generateGridCyclic } from './gridGenerator.js';
 
 const loadingOverlay = document.getElementById('loading-overlay');
 const loadingMsg     = document.getElementById('loading-msg');
@@ -21,13 +22,14 @@ let currentMinLen = 4;
 
 (async function init() {
   showLoading('Loading word list…');
-  await loadWordList();
+  await Promise.all([loadWordList(), loadDice()]);
   hideLoading();
   solveBtn.disabled = false;
   bindSizeButtons();
   bindMinLenButtons();
   buildGrid(currentSize);
   bindSolveButton();
+  document.getElementById('random-grid-btn').addEventListener('click', handleRandomGrid);
   loadFromURL();
 })();
 
@@ -159,6 +161,17 @@ function updateSolveBtnState() {
 
 function bindSolveButton() {
   solveBtn.addEventListener('click', handleSolve);
+}
+
+function handleRandomGrid() {
+  const grid = generateGridCyclic(currentSize, currentSize);
+  const cells = solverGrid.querySelectorAll('.grid-cell-input');
+  grid.flat().forEach((letter, i) => {
+    if (cells[i]) cells[i].value = letter === 'Qu' ? 'Q' : letter;
+  });
+  resultsArea.hidden = true;
+  gridHint.textContent = '';
+  updateSolveBtnState();
 }
 
 function updateURL() {

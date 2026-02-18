@@ -23,6 +23,7 @@ A browser-based Boggle tool suite. The landing page links to two tools:
 
 - **Any grid size** — 4×4, 5×5, or 6×6
 - **Configurable minimum word length** — 3, 4, 5, or 6 letters
+- **Random Grid** — instantly fills the grid with a randomly generated Boggle layout using the authentic dice set; larger grids cycle through the 16 dice in additional shuffled passes
 - **Word length breakdown** — results show a count of words found at each length before listing them
 - **Shareable URLs** — after solving, the URL updates to encode the grid and settings (e.g. `solver.html?grid=ABCDEFGHIJKLMNOP&min=5`); loading a URL with those parameters auto-populates the grid and runs the solve immediately
 
@@ -80,8 +81,9 @@ python -m http.server 8080
 ## Boggle Solver Usage
 
 1. Choose a **grid size** and **minimum word length**.
-2. Fill in the letter grid and click **Find Words**.
-3. The URL updates to reflect the current grid and settings — bookmark or share it to return to the same grid later.
+2. Click **Random Grid** to populate the grid automatically, or fill in letters manually.
+3. Click **Find Words**.
+4. The URL updates to reflect the current grid and settings — bookmark or share it to return to the same grid later.
 
 ## Key Algorithms
 
