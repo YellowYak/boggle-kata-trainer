@@ -5,7 +5,7 @@ A browser-based Boggle practice app. A **Boggle kata** is a short, focused exerc
 ## Features
 
 - **Configurable grid sizes** — 2×2, 2×3, 3×3, or 4×4
-- **Number of solutions** — Random (1+), Few Words (2–5), or Many Words (8+)
+- **Number of solutions** — Random, Few Words, or Many Words; thresholds scale with grid size (e.g. Few Words is 1–2 on 2×2, 2–5 on 3×3, 2–9 on 4×4)
 - **Minimum word length** — 3, 4, 5, or 6 letters
 - **Adjustable timer** — 15, 30, or 60 seconds, or Untimed (no countdown; end manually or by finding every word)
 - **Real-time path validation** — grid cells highlight as you type, turning green for a valid path and red when a letter can't be reached

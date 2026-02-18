@@ -30,6 +30,7 @@ const submitBtnEl   = document.getElementById('submit-btn');
 const inputHint     = document.getElementById('input-hint');
 const foundWordsList= document.getElementById('found-words-list');
 const endGameBtn    = document.getElementById('end-game-btn');
+const diffHint      = document.getElementById('diff-hint');
 
 const resultGridEl       = document.getElementById('result-grid');
 const resultHeadingEl    = document.getElementById('result-heading');
@@ -128,7 +129,16 @@ function bindSetupUI() {
 
   startBtn.addEventListener('click', handleStartGame);
 
-  syncConstraints(); // apply initial disabled state
+  syncConstraints(); // apply initial disabled state (also sets hint label)
+}
+
+function updateDifficultyHint() {
+  const st = getState();
+  const cfg = DIFFICULTY_CONFIG[st.gridSize];
+  const fmt = ({ min, max }) =>
+    max === Infinity ? `${min}+` : `${min}–${max}`;
+  diffHint.textContent =
+    `Random: ${fmt(cfg.random)}  |  Few Words: ${fmt(cfg.few)}  |  Many Words: ${fmt(cfg.many)}`;
 }
 
 /**
@@ -137,6 +147,7 @@ function bindSetupUI() {
  * Rules: 2×2 grid cannot be combined with minWordLen ≥ 5.
  */
 function syncConstraints() {
+  updateDifficultyHint();
   const st = getState();
   const is2x2     = st.gridSize === '2x2';
   const isLongWord = st.minWordLen >= 5;
@@ -188,7 +199,7 @@ async function handleStartGame() {
 
   let grid, words;
   const { rows, cols } = st;
-  const cfg = DIFFICULTY_CONFIG[st.difficulty];
+  const cfg = DIFFICULTY_CONFIG[st.gridSize][st.difficulty];
   let attempts = 0;
   const maxAttempts = 200;
 
