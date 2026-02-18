@@ -386,6 +386,24 @@ header h1 {
   gap: 6px;
 }
 
+.length-breakdown-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 12px;
+  font-size: 0.85rem;
+}
+
+.length-breakdown-table td {
+  padding: 3px 8px;
+  color: var(--text-secondary);
+}
+
+.length-breakdown-table td:first-child {
+  font-weight: 600;
+  color: var(--text);
+  width: 7rem;
+}
+
 .result-word {
   padding: 4px 10px;
   border-radius: 100px;

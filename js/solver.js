@@ -275,9 +275,18 @@ function displayResults(wordSet) {
     ? 'No words found'
     : `${count} word${count === 1 ? '' : 's'} found (${totalScore} point${totalScore === 1 ? '' : 's'})`;
 
+  const lengthBreakdown = document.getElementById('length-breakdown');
   if (count === 0) {
+    lengthBreakdown.innerHTML = '';
     resultWords.innerHTML = '<span style="color:var(--muted);font-size:.9rem;">Try a different grid.</span>';
   } else {
+    const maxLen = Math.max(...sorted.map(w => w.length));
+    const rows = [];
+    for (let len = currentMinLen; len <= maxLen; len++) {
+      const n = sorted.filter(w => w.length === len).length;
+      rows.push(`<tr><td>${len} letters</td><td>${n} ${n === 1 ? 'word' : 'words'}</td></tr>`);
+    }
+    lengthBreakdown.innerHTML = `<table class="length-breakdown-table"><tbody>${rows.join('')}</tbody></table>`;
     resultWords.innerHTML = sorted.map(w =>
       `<a class="result-word found" href="https://www.dictionary.com/browse/${w}?noredirect=true" target="_blank" rel="noopener noreferrer">${w.toUpperCase()}</a>`
     ).join('');
