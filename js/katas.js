@@ -3,21 +3,20 @@
  * Main game controller — wires up UI, state, grid generation, and validation.
  */
 
-import { loadDice, generateGrid } from './gridGenerator.js';
+import { loadDice, generateGrid, buildAdjacency } from './gridGenerator.js';
 import { loadWordList, solveGrid } from './wordSolver.js';
 import { validateInput } from './wordValidator.js';
 import {
   getState, setGridSize, setDifficulty, setDuration, setMinWordLen, startGame, submitWord, endGame,
   getMissedWords, getFoundWordsSorted, getMaxScore,
-  DIFFICULTY_CONFIG,
+  DIFFICULTY_CONFIG, TIMER_URGENT_THRESHOLD,
 } from './gameState.js';
+import { showLoading, hideLoading, bindButtonGroup, setButtonGroupValue, wordLink } from './ui.js';
 
 // ── DOM refs ──────────────────────────────────────────────────────────────────
 const setupScreen   = document.getElementById('setup-screen');
 const gameScreen    = document.getElementById('game-screen');
 const resultsScreen = document.getElementById('results-screen');
-const loadingOverlay = document.getElementById('loading-overlay');
-const loadingMsg    = document.getElementById('loading-msg');
 
 const startBtn      = document.getElementById('start-btn');
 const gridEl        = document.getElementById('grid');
@@ -59,29 +58,6 @@ function showScreen(name) {
   setupScreen.classList.toggle('active',   name === 'setup');
   gameScreen.classList.toggle('active',    name === 'game');
   resultsScreen.classList.toggle('active', name === 'results');
-}
-
-function showLoading(msg) {
-  loadingMsg.textContent = msg;
-  loadingOverlay.classList.add('visible');
-}
-
-function hideLoading() {
-  loadingOverlay.classList.remove('visible');
-}
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
-/** Wire up an exclusive toggle button group. `onSelect` receives the clicked button. */
-function bindButtonGroup(selector, onSelect) {
-  const buttons = document.querySelectorAll(selector);
-  buttons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      buttons.forEach(b => { b.classList.remove('selected'); b.setAttribute('aria-pressed', 'false'); });
-      btn.classList.add('selected');
-      btn.setAttribute('aria-pressed', 'true');
-      onSelect(btn);
-    });
-  });
 }
 
 // ── Setup UI ──────────────────────────────────────────────────────────────────
@@ -131,14 +107,8 @@ function syncConstraints() {
 
   // Auto-fix: 2×2 selected but minWordLen is now disabled → fall back to 4
   if (is2x2 && isLongWord) {
-    document.querySelectorAll('.minlen-btn').forEach(b => {
-      b.classList.remove('selected');
-      b.setAttribute('aria-pressed', 'false');
-    });
-    const fallback = document.querySelector('.minlen-btn[data-minlen="4"]');
-    fallback.classList.add('selected');
-    fallback.setAttribute('aria-pressed', 'true');
     setMinWordLen(4);
+    setButtonGroupValue('.minlen-btn', 'minlen', 4);
     // Re-run to update disabled states with the corrected minWordLen
     document.querySelectorAll('.minlen-btn').forEach(btn => {
       btn.disabled = Number(btn.dataset.minlen) >= 5;
@@ -191,7 +161,7 @@ async function handleStartGame() {
   renderGrid(grid, cols);
   showScreen('game');
   startTimer();
-  resetHistory();
+  resetInputState();
   wordInput.value = '';
   wordInput.focus();
   clearFoundWords();
@@ -261,7 +231,7 @@ function startTimer() {
 
 function updateTimerDisplay(seconds) {
   timerDisplay.textContent = String(seconds).padStart(2, '0');
-  timerDisplay.classList.toggle('urgent', seconds <= 10);
+  timerDisplay.classList.toggle('urgent', seconds <= TIMER_URGENT_THRESHOLD);
 }
 
 function handleTimeUp() {
@@ -269,46 +239,39 @@ function handleTimeUp() {
   showResults('timeup');
 }
 
-// ── Input history (bash-style) ────────────────────────────────────────────────
-let inputHistory = [];   // oldest → newest
-let historyIndex = -1;  // -1 = not navigating
+// ── Input state ───────────────────────────────────────────────────────────────
+const inputState = {
+  history: [],       // oldest → newest
+  historyIndex: -1,  // -1 = not navigating
+  tapHistory: [],    // letters appended by cell taps
+  tapPath: [],       // cell indices for tapped letters
+  lastWasTouch: false,
+};
 
-// ── Touch / cell-tap state ────────────────────────────────────────────────────
-let tapHistory = [];       // letters appended by cell taps (most recent game word)
-let tapPath    = [];       // cell indices for tapped letters (parallel to tapHistory)
-let lastInputWasTouch = false; // true when last character came from a cell tap
-
-function resetHistory() {
-  inputHistory = [];
-  historyIndex = -1;
-  tapHistory = [];
-  tapPath    = [];
-  lastInputWasTouch = false;
-}
-
-/** True when two grid cells are 8-directionally adjacent. */
-function isAdjacent(idx1, idx2, cols) {
-  const r1 = Math.floor(idx1 / cols), c1 = idx1 % cols;
-  const r2 = Math.floor(idx2 / cols), c2 = idx2 % cols;
-  return idx1 !== idx2 && Math.abs(r1 - r2) <= 1 && Math.abs(c1 - c2) <= 1;
+function resetInputState() {
+  inputState.history = [];
+  inputState.historyIndex = -1;
+  inputState.tapHistory = [];
+  inputState.tapPath = [];
+  inputState.lastWasTouch = false;
 }
 
 function historyUp() {
-  if (inputHistory.length === 0) return;
-  if (historyIndex === -1) historyIndex = inputHistory.length - 1;
-  else if (historyIndex > 0) historyIndex--;
+  if (inputState.history.length === 0) return;
+  if (inputState.historyIndex === -1) inputState.historyIndex = inputState.history.length - 1;
+  else if (inputState.historyIndex > 0) inputState.historyIndex--;
   else return; // already at oldest
-  wordInput.value = inputHistory[historyIndex];
+  wordInput.value = inputState.history[inputState.historyIndex];
   handleTyping();
 }
 
 function historyDown() {
-  if (historyIndex === -1) return; // not navigating
-  if (historyIndex < inputHistory.length - 1) {
-    historyIndex++;
-    wordInput.value = inputHistory[historyIndex];
+  if (inputState.historyIndex === -1) return; // not navigating
+  if (inputState.historyIndex < inputState.history.length - 1) {
+    inputState.historyIndex++;
+    wordInput.value = inputState.history[inputState.historyIndex];
   } else {
-    historyIndex = -1;
+    inputState.historyIndex = -1;
     wordInput.value = '';
   }
   handleTyping();
@@ -320,40 +283,43 @@ function handleCellTap(letter, idx) {
   if (st.phase !== 'playing') return;
 
   // Reject if this cell is already in the current tap path
-  if (tapPath.includes(idx)) return;
+  if (inputState.tapPath.includes(idx)) return;
 
   // Reject if not adjacent to the previously tapped cell
-  if (tapPath.length > 0 && !isAdjacent(tapPath[tapPath.length - 1], idx, st.cols)) return;
+  if (inputState.tapPath.length > 0) {
+    const adj = buildAdjacency(st.rows, st.cols);
+    if (!adj[inputState.tapPath[inputState.tapPath.length - 1]].includes(idx)) return;
+  }
 
-  lastInputWasTouch = true;
-  tapPath.push(idx);
-  tapHistory.push(letter);
+  inputState.lastWasTouch = true;
+  inputState.tapPath.push(idx);
+  inputState.tapHistory.push(letter);
   wordInput.value += letter;
-  historyIndex = -1;
+  inputState.historyIndex = -1;
   handleTyping();
 }
 
 function handleDeleteLetter() {
   if (getState().phase !== 'playing') return;
   if (!wordInput.value) return;
-  if (tapHistory.length > 0) {
-    const removed = tapHistory.pop();
-    tapPath.pop();
+  if (inputState.tapHistory.length > 0) {
+    const removed = inputState.tapHistory.pop();
+    inputState.tapPath.pop();
     wordInput.value = wordInput.value.slice(0, -removed.length);
   } else {
     wordInput.value = wordInput.value.slice(0, -1);
   }
-  historyIndex = -1;
+  inputState.historyIndex = -1;
   handleTyping();
 }
 
 // ── Game input ────────────────────────────────────────────────────────────────
 function bindGameUI() {
   wordInput.addEventListener('input', () => {
-    tapHistory = [];        // keyboard edit invalidates tap-unit tracking
-    tapPath    = [];
-    lastInputWasTouch = false;
-    historyIndex = -1;
+    inputState.tapHistory = [];   // keyboard edit invalidates tap-unit tracking
+    inputState.tapPath    = [];
+    inputState.lastWasTouch = false;
+    inputState.historyIndex = -1;
     handleTyping();
   });
   deleteBtnEl.addEventListener('click', handleDeleteLetter);
@@ -398,8 +364,8 @@ function handleTyping() {
     inputHint.textContent = '';
     // When the word was built entirely by tapping, highlight the exact tapped cells.
     // Otherwise (keyboard entry) use the first DFS-found valid path.
-    const byTap = tapPath.length > 0 && tapHistory.join('') === typed;
-    highlightCells(byTap ? tapPath : result.completePaths[0], false);
+    const byTap = inputState.tapPath.length > 0 && inputState.tapHistory.join('') === typed;
+    highlightCells(byTap ? inputState.tapPath : result.completePaths[0], false);
   } else {
     wordInput.className = 'invalid-path';
     inputHint.textContent = 'Invalid path — letter not reachable from here';
@@ -414,10 +380,10 @@ function handleSubmit() {
   const word = wordInput.value.trim();
   if (!word) return;
 
-  inputHistory.push(word);
-  historyIndex = -1;
-  tapHistory = [];
-  tapPath    = [];
+  inputState.history.push(word);
+  inputState.historyIndex = -1;
+  inputState.tapHistory = [];
+  inputState.tapPath    = [];
 
   const result = submitWord(word);
 
@@ -448,7 +414,7 @@ function handleSubmit() {
     highlightCells(null);
   }
 
-  if (!lastInputWasTouch) wordInput.focus();
+  if (!inputState.lastWasTouch) wordInput.focus();
 
   // Clear hint after 1.5s
   setTimeout(() => {
@@ -497,18 +463,14 @@ function showResults(reason) {
   resultMaxScoreEl.textContent = getMaxScore();
   resultTotalEl.textContent = `${found.length} of ${st.allWords.size} words found`;
 
-  resultFoundEl.innerHTML = found.map(w =>
-    `<a class="result-word found" href="https://www.dictionary.com/browse/${w}?noredirect=true" target="_blank" rel="noopener noreferrer">${w.toUpperCase()}</a>`
-  ).join('');
+  resultFoundEl.innerHTML = found.map(w => wordLink(w, 'found')).join('');
 
   const missedSection = resultMissedEl.closest('.results-section');
   if (reason === 'swept') {
     missedSection.hidden = true;
   } else {
     missedSection.hidden = false;
-    resultMissedEl.innerHTML = missed.map(w =>
-      `<a class="result-word missed" href="https://www.dictionary.com/browse/${w}?noredirect=true" target="_blank" rel="noopener noreferrer">${w.toUpperCase()}</a>`
-    ).join('');
+    resultMissedEl.innerHTML = missed.map(w => wordLink(w, 'missed')).join('');
   }
 
   // Clear game grid highlights, then snapshot it into the results grid
