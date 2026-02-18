@@ -73,7 +73,7 @@ function bindMinLenButtons() {
 
 function buildGrid(n) {
   solverGrid.innerHTML = '';
-  solverGrid.style.gridTemplateColumns = `repeat(${n}, 1fr)`;
+  solverGrid.style.gridTemplateColumns = `repeat(${n}, auto)`;
 
   for (let i = 0; i < n * n; i++) {
     const input = document.createElement('input');
