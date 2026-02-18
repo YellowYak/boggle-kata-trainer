@@ -16,11 +16,28 @@ export const DIFFICULTY = {
   MANY: 'many',
 };
 
-// Thresholds for difficulty modes
+// Thresholds for difficulty modes, keyed by grid size then difficulty
 export const DIFFICULTY_CONFIG = {
-  [DIFFICULTY.RANDOM]: { min: 1,  max: Infinity },
-  [DIFFICULTY.FEW]:    { min: 2,  max: 5 },
-  [DIFFICULTY.MANY]:   { min: 8,  max: Infinity },
+  '2x2': {
+    [DIFFICULTY.RANDOM]: { min: 1, max: Infinity },
+    [DIFFICULTY.FEW]:    { min: 1, max: 2 },
+    [DIFFICULTY.MANY]:   { min: 3, max: Infinity },
+  },
+  '3x2': {
+    [DIFFICULTY.RANDOM]: { min: 1, max: Infinity },
+    [DIFFICULTY.FEW]:    { min: 1, max: 3 },
+    [DIFFICULTY.MANY]:   { min: 4, max: Infinity },
+  },
+  '3x3': {
+    [DIFFICULTY.RANDOM]: { min: 1, max: Infinity },
+    [DIFFICULTY.FEW]:    { min: 2, max: 5 },
+    [DIFFICULTY.MANY]:   { min: 6, max: Infinity },
+  },
+  '4x4': {
+    [DIFFICULTY.RANDOM]: { min: 1,  max: Infinity },
+    [DIFFICULTY.FEW]:    { min: 2,  max: 9 },
+    [DIFFICULTY.MANY]:   { min: 10, max: Infinity },
+  },
 };
 
 export const VALID_DURATIONS = [15, 30, 60, null]; // null = untimed
