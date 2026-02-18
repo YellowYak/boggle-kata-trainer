@@ -5,16 +5,7 @@
  */
 
 import { loadWordList, solveGrid } from './wordSolver.js';
-
-/** Standard Boggle scoring by word length */
-function scoreWord(word) {
-  const len = word.length;
-  if (len <= 4) return 1;
-  if (len === 5) return 2;
-  if (len === 6) return 3;
-  if (len === 7) return 5;
-  return 11; // 8+
-}
+import { scoreWord } from './gameState.js';
 
 const loadingOverlay = document.getElementById('loading-overlay');
 const loadingMsg     = document.getElementById('loading-msg');
@@ -49,35 +40,32 @@ function hideLoading() {
   loadingOverlay.classList.remove('visible');
 }
 
-function bindSizeButtons() {
-  document.querySelectorAll('.size-btn').forEach(btn => {
+/** Wire up an exclusive toggle button group. `onSelect` receives the clicked button. */
+function bindButtonGroup(selector, onSelect) {
+  const buttons = document.querySelectorAll(selector);
+  buttons.forEach(btn => {
     btn.addEventListener('click', () => {
-      document.querySelectorAll('.size-btn').forEach(b => {
-        b.classList.remove('selected');
-        b.setAttribute('aria-pressed', 'false');
-      });
+      buttons.forEach(b => { b.classList.remove('selected'); b.setAttribute('aria-pressed', 'false'); });
       btn.classList.add('selected');
       btn.setAttribute('aria-pressed', 'true');
-      currentSize = Number(btn.dataset.size);
-      buildGrid(currentSize);
-      resultsArea.hidden = true;
-      gridHint.textContent = '';
+      onSelect(btn);
     });
   });
 }
 
+function bindSizeButtons() {
+  bindButtonGroup('.size-btn', btn => {
+    currentSize = Number(btn.dataset.size);
+    buildGrid(currentSize);
+    resultsArea.hidden = true;
+    gridHint.textContent = '';
+  });
+}
+
 function bindMinLenButtons() {
-  document.querySelectorAll('.minlen-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.minlen-btn').forEach(b => {
-        b.classList.remove('selected');
-        b.setAttribute('aria-pressed', 'false');
-      });
-      btn.classList.add('selected');
-      btn.setAttribute('aria-pressed', 'true');
-      currentMinLen = Number(btn.dataset.minlen);
-      resultsArea.hidden = true;
-    });
+  bindButtonGroup('.minlen-btn', btn => {
+    currentMinLen = Number(btn.dataset.minlen);
+    resultsArea.hidden = true;
   });
 }
 

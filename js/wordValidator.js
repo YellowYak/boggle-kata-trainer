@@ -82,15 +82,3 @@ function explorePaths(idx, visited, typed, typedPos, flat, adj, currentPath, com
   currentPath.pop();
 }
 
-/**
- * Returns the best path for cell highlighting:
- *   - First complete path if the typed string is fully matched
- *   - Deepest partial path otherwise (for invalid-state highlighting)
- */
-export function getBestPath(typed, grid, rows, cols) {
-  if (!typed) return null;
-  const { completePaths, partialPaths } = validateInput(typed, grid, rows, cols);
-  if (completePaths.length > 0) return completePaths[0];
-  if (partialPaths.length > 0) return partialPaths[0];
-  return null;
-}

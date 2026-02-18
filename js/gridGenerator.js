@@ -30,8 +30,12 @@ export function generateGrid(rows, cols) {
     throw new Error(`Grid size ${rows}x${cols} requires ${count} dice but only ${DICE.length} available.`);
   }
 
-  // Shuffle and pick count dice (without replacement)
-  const shuffled = [...DICE].sort(() => Math.random() - 0.5);
+  // Fisher-Yates shuffle, then pick the first `count` dice
+  const shuffled = [...DICE];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
   const chosen = shuffled.slice(0, count);
 
   // For each die, pick a random face
@@ -45,11 +49,16 @@ export function generateGrid(rows, cols) {
   return grid;
 }
 
+const adjCache = new Map();
+
 /**
  * Returns an adjacency map: for each cell index [r*cols+c],
  * which other cell indices are adjacent (8-directional)?
+ * Result is cached — only computed once per unique (rows, cols) pair.
  */
 export function buildAdjacency(rows, cols) {
+  const key = `${rows}x${cols}`;
+  if (adjCache.has(key)) return adjCache.get(key);
   const adj = {};
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
@@ -66,5 +75,6 @@ export function buildAdjacency(rows, cols) {
       }
     }
   }
+  adjCache.set(key, adj);
   return adj;
 }
