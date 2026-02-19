@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Browse and search the full TWL Boggle word list." />
+  <title>Word Dictionary</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    .back-link {
+      font-size: .85rem;
+      font-weight: 500;
+      color: var(--muted);
+      text-decoration: none;
+      transition: color .15s;
+    }
+    .back-link:hover { color: var(--accent); }
+
+    #query-input {
+      width: 100%;
+      padding: 10px 12px;
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      color: var(--text);
+      font-size: 1rem;
+      outline: none;
+      transition: border-color .15s;
+    }
+    #query-input:focus { border-color: var(--accent); }
+
+    .search-hint {
+      font-size: .8rem;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    .length-row {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .length-row label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: .9rem;
+      font-weight: 500;
+    }
+
+    .len-input {
+      width: 64px;
+      padding: 8px 10px;
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      color: var(--text);
+      font-size: .9rem;
+      text-align: center;
+      outline: none;
+      transition: border-color .15s;
+    }
+    .len-input:focus { border-color: var(--accent); }
+
+    .pagination-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    #word-count-label {
+      font-size: .9rem;
+      color: var(--muted);
+      flex: 1;
+    }
+
+    .page-btns { display: flex; gap: 6px; }
+
+    .page-btn {
+      padding: 8px 14px;
+      background: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      font-size: .85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: border-color .15s, background .15s;
+    }
+    .page-btn:hover:not(:disabled) {
+      border-color: var(--accent);
+      background: var(--accent-light);
+      color: var(--accent);
+    }
+    .page-btn:disabled { opacity: .4; cursor: not-allowed; }
+
+    .no-results {
+      color: var(--muted);
+      font-size: .9rem;
+      padding: 4px 0;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <header>
+      <h1>Word Dictionary</h1>
+      <a href="index.html" class="back-link" aria-label="Back to Boggle Tools">← All Tools</a>
+    </header>
+
+    <div class="setup-card">
+      <h2>Search</h2>
+      <input id="query-input" type="text" placeholder='e.g. "qu" or "c_t"'
+             autocomplete="off" spellcheck="false" />
+      <div class="option-group" role="group" aria-label="Search mode">
+        <button class="opt-btn mode-btn selected" data-mode="startsWith" aria-pressed="true">Starts with</button>
+        <button class="opt-btn mode-btn" data-mode="contains" aria-pressed="false">Contains</button>
+        <button class="opt-btn mode-btn" data-mode="endsWith" aria-pressed="false">Ends with</button>
+      </div>
+      <p class="search-hint">Use _ as a wildcard (e.g. c_t finds cat, cot, cut). Wildcard patterns ignore the mode buttons.</p>
+    </div>
+
+    <div class="setup-card">
+      <h2>Word Length</h2>
+      <div class="length-row">
+        <label>Min <input id="min-len" class="len-input" type="number" min="1" max="25" value="3" /></label>
+        <label>Max <input id="max-len" class="len-input" type="number" min="1" max="25" placeholder="any" /></label>
+      </div>
+    </div>
+
+    <div class="pagination-row">
+      <span id="word-count-label">Loading…</span>
+      <div class="page-btns">
+        <button class="page-btn prev-btn" disabled>← Prev</button>
+        <button class="page-btn next-btn">Next →</button>
+      </div>
+    </div>
+
+    <div id="words-grid" class="words-grid"></div>
+  </div>
+
+  <div id="loading-overlay" role="status" aria-live="polite">
+    <div class="spinner"></div>
+    <p id="loading-msg">Loading word list…</p>
+  </div>
+
+  <script type="module" src="js/dictionary.js"></script>
+</body>
+</html>

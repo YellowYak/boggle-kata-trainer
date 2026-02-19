@@ -1,9 +1,10 @@
 # Boggle Katas
 
-A browser-based Boggle tool suite. The landing page links to two tools:
+A browser-based Boggle tool suite. The landing page links to three tools:
 
 - **Boggle Katas** — a timed practice game; a *kata* is a short, focused exercise inspired by the martial arts concept of form, designed to build muscle memory for spotting words in a Boggle grid.
 - **Boggle Solver** — enter any grid to instantly see every valid word it contains, with shareable URLs.
+- **Word Dictionary** — browse and search all 178,000+ TWL words with text, length, and wildcard filters.
 
 ## Boggle Katas Features
 
@@ -27,6 +28,14 @@ A browser-based Boggle tool suite. The landing page links to two tools:
 - **Word length breakdown** — results show a count of words found at each length before listing them
 - **Shareable URLs** — after solving, the URL updates to encode the grid and settings (e.g. `solver.html?grid=ABCDEFGHIJKLMNOP&min=5`); loading a URL with those parameters auto-populates the grid and runs the solve immediately
 
+## Word Dictionary Features
+
+- **Paginated browsing** — displays 50 words per page across the full ~178,000-word TWL list
+- **Text search with modes** — filter by *Starts with*, *Contains*, or *Ends with* a given string
+- **Wildcard patterns** — use `_` as a single-letter wildcard (e.g. `c_t` matches *cat*, *cot*, *cut*); wildcard mode is auto-detected and overrides the text search modes
+- **Word length filter** — set a minimum and/or maximum word length
+- **Dictionary links** — every word links to its dictionary.com entry
+
 ## Project Structure
 
 ```
@@ -34,11 +43,13 @@ BoggleKatas/
 ├── index.html              # Landing page (tool hub)
 ├── katas.html              # Boggle Katas (setup / game / results screens)
 ├── solver.html             # Boggle Solver (enter grid, find all words)
+├── dictionary.html         # Word Dictionary (browse & search the TWL)
 ├── css/
 │   └── style.css           # Minimalist, mobile-first styles
 ├── js/
 │   ├── katas.js            # Katas UI controller
 │   ├── solver.js           # Solver UI controller; handles URL encode/decode
+│   ├── dictionary.js       # Dictionary UI controller; filtering & pagination
 │   ├── gameState.js        # Central state, scoring, difficulty config
 │   ├── gridGenerator.js    # Loads dice.txt, builds grids & adjacency maps
 │   ├── wordSolver.js       # Trie-based solver, finds all valid words via DFS
@@ -84,6 +95,14 @@ python -m http.server 8080
 2. Click **Random Grid** to populate the grid automatically, or fill in letters manually.
 3. Click **Find Words**.
 4. The URL updates to reflect the current grid and settings — bookmark or share it to return to the same grid later.
+
+## Word Dictionary Usage
+
+1. The full word list loads immediately, paginated 50 words at a time.
+2. Type in the **Search** field to filter by prefix, substring, or suffix using the mode buttons.
+3. Use `_` in the search field as a single-letter wildcard (e.g. `_qu_` for 4-letter words with *qu* in the middle); the mode buttons are ignored in wildcard mode.
+4. Set **Min** and/or **Max** length to narrow results by word length.
+5. Click any word to open its dictionary.com entry.
 
 ## Key Algorithms
 
