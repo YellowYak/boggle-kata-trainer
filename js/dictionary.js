@@ -78,8 +78,8 @@ function scheduleFilter() {
 
 function bindEvents() {
   queryInput.addEventListener('input', scheduleFilter);
-  minLenInput.addEventListener('input', scheduleFilter);
-  maxLenInput.addEventListener('input', scheduleFilter);
+  minLenInput.addEventListener('change', applyFilters);
+  maxLenInput.addEventListener('change', applyFilters);
 
   bindButtonGroup('.mode-btn', btn => {
     selectedMode = btn.dataset.mode;

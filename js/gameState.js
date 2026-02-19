@@ -3,14 +3,16 @@
  * Central state for the current game session.
  */
 
-export const GRID_SIZES = {
+const GRID_SIZES = {
+  '6x6': { rows: 6, cols: 6 },
+  '5x5': { rows: 5, cols: 5 },
   '4x4': { rows: 4, cols: 4 },
   '3x3': { rows: 3, cols: 3 },
   '3x2': { rows: 3, cols: 2 },
   '2x2': { rows: 2, cols: 2 },
 };
 
-export const DIFFICULTY = {
+const DIFFICULTY = {
   RANDOM: 'random',
   FEW: 'few',
   MANY: 'many',
@@ -25,22 +27,32 @@ export const DIFFICULTY_CONFIG = {
   },
   '3x2': {
     [DIFFICULTY.RANDOM]: { min: 1, max: Infinity },
-    [DIFFICULTY.FEW]:    { min: 1, max: 3 },
+    [DIFFICULTY.FEW]:    { min: 1, max: 2 },
     [DIFFICULTY.MANY]:   { min: 4, max: Infinity },
   },
   '3x3': {
     [DIFFICULTY.RANDOM]: { min: 1, max: Infinity },
-    [DIFFICULTY.FEW]:    { min: 2, max: 5 },
+    [DIFFICULTY.FEW]:    { min: 1, max: 3 },
     [DIFFICULTY.MANY]:   { min: 6, max: Infinity },
   },
   '4x4': {
     [DIFFICULTY.RANDOM]: { min: 1,  max: Infinity },
-    [DIFFICULTY.FEW]:    { min: 2,  max: 9 },
+    [DIFFICULTY.FEW]:    { min: 1,  max: 5 },
     [DIFFICULTY.MANY]:   { min: 10, max: Infinity },
+  },
+  '5x5': {
+    [DIFFICULTY.RANDOM]: { min: 1,  max: Infinity },
+    [DIFFICULTY.FEW]:    { min: 1,  max: 7 },
+    [DIFFICULTY.MANY]:   { min: 15, max: Infinity },
+  },
+  '6x6': {
+    [DIFFICULTY.RANDOM]: { min: 1,  max: Infinity },
+    [DIFFICULTY.FEW]:    { min: 2,  max: 10 },
+    [DIFFICULTY.MANY]:   { min: 25, max: Infinity },
   },
 };
 
-export const VALID_DURATIONS = [15, 30, 60, null]; // null = untimed
+const VALID_DURATIONS = [15, 30, 60, 120, 180, null]; // null = untimed
 export const VALID_MIN_LENGTHS = [3, 4, 5, 6];
 export const SOLVER_SIZES = [4, 5, 6];
 export const TIMER_URGENT_THRESHOLD = 10; // seconds at which timer turns red
@@ -115,13 +127,15 @@ export function endGame() {
   }
 }
 
+const byScoreDesc = (a, b) => scoreWord(b) - scoreWord(a) || a.localeCompare(b);
+
 export function getMissedWords() {
   if (!state.allWords) return [];
-  return [...state.allWords].filter(w => !state.foundWords.has(w)).sort();
+  return [...state.allWords].filter(w => !state.foundWords.has(w)).sort(byScoreDesc);
 }
 
 export function getFoundWordsSorted() {
-  return [...state.foundWords].sort();
+  return [...state.foundWords].sort(byScoreDesc);
 }
 
 export function getMaxScore() {
