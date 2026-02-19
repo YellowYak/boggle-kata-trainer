@@ -3,7 +3,7 @@
  * Main game controller — wires up UI, state, grid generation, and validation.
  */
 
-import { loadDice, generateGrid, buildAdjacency } from './gridGenerator.js';
+import { loadDice, generateGridCyclic, buildAdjacency } from './gridGenerator.js';
 import { loadWordList, solveGrid } from './wordSolver.js';
 import { validateInput } from './wordValidator.js';
 import {
@@ -141,7 +141,7 @@ async function handleStartGame() {
   const maxAttempts = 200;
 
   do {
-    grid = generateGrid(rows, cols);
+    grid = generateGridCyclic(rows, cols);
     words = solveGrid(grid, rows, cols, st.minWordLen);
     attempts++;
     if (attempts >= maxAttempts) break;
@@ -151,7 +151,7 @@ async function handleStartGame() {
   // until we have at least 1 word — so the game is always playable.
   if (words.size === 0) {
     do {
-      grid = generateGrid(rows, cols);
+      grid = generateGridCyclic(rows, cols);
       words = solveGrid(grid, rows, cols, st.minWordLen);
     } while (words.size === 0);
   }

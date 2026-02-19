@@ -8,14 +8,14 @@ A browser-based Boggle tool suite. The landing page links to three tools:
 
 ## Boggle Katas Features
 
-- **Configurable grid sizes** — 2×2, 2×3, 3×3, or 4×4
-- **Number of solutions** — Random, Few Words, or Many Words; thresholds scale with grid size (e.g. Few Words is 1–2 on 2×2, 2–5 on 3×3, 2–9 on 4×4)
+- **Configurable grid sizes** — 2×2, 2×3, 3×3, 4×4, 5×5, or 6×6
+- **Number of solutions** — Random, Few Words, or Many Words; thresholds scale with grid size (e.g. Few Words is 1–3 on 3×3, 1–5 on 4×4, 1–7 on 5×5, 2–10 on 6×6)
 - **Minimum word length** — 3, 4, 5, or 6 letters
-- **Adjustable timer** — 15, 30, or 60 seconds, or Untimed (no countdown; end manually or by finding every word)
+- **Adjustable timer** — 15 sec, 30 sec, 60 sec, 2 min, 3 min, or Untimed (no countdown; end manually or by finding every word)
 - **Real-time path validation** — grid cells highlight as you type, turning green for a valid path and red when a letter can't be reached
 - **Touch input** — tap grid tiles in sequence to build a word without triggering the on-screen keyboard; use ⌫ to remove the last tapped tile
 - **Word history navigation** — press ↑/↓ to cycle through previously submitted words, like a terminal
-- **Post-game review** — see every word you found and every word you missed, each linking to its dictionary.com entry
+- **Post-game review** — see every word you found and every word you missed, each linking to its dictionary.com entry; lists are sorted by score (highest first), then alphabetically
 - **Standard Boggle scoring** — 1 pt (3–4 letters), 2 pt (5), 3 pt (6), 5 pt (7), 11 pt (8+)
 - **TWL word list** — validated against the Tournament Word List (~178,000 words)
 - **Authentic dice** — uses the 16 standard Boggle dice; *Q* is always treated as *Qu*
@@ -106,7 +106,7 @@ python -m http.server 8080
 
 ## Key Algorithms
 
-**Grid generation** — Shuffles the 16 standard Boggle dice and picks a random face from each. Builds an 8-directional adjacency map (cell index → neighboring cell indices) used by all DFS routines.
+**Grid generation** — Shuffles the 16 standard Boggle dice and picks a random face from each. For grids larger than 16 cells (5×5, 6×6), the dice set is reshuffled and cycled through additional passes until all cells are filled. Builds an 8-directional adjacency map (cell index → neighboring cell indices) used by all DFS routines.
 
 **Word solving** — Loads the TWL word list into a trie for fast prefix pruning. Runs DFS from every starting cell; branches are cut as soon as the current letter sequence is not a prefix of any word in the trie.
 

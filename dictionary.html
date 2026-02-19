@@ -51,15 +51,14 @@
     }
 
     .len-input {
-      width: 64px;
       padding: 8px 10px;
       border: 2px solid var(--border);
       border-radius: var(--radius);
       background: var(--surface);
       color: var(--text);
       font-size: .9rem;
-      text-align: center;
       outline: none;
+      cursor: pointer;
       transition: border-color .15s;
     }
     .len-input:focus { border-color: var(--accent); }
@@ -110,6 +109,12 @@
       <a href="index.html" class="back-link" aria-label="Back to Boggle Tools">← All Tools</a>
     </header>
 
+    <p class="setup-intro">
+      Browse and search the <strong>Tournament Word List (TWL)</strong>. TWL was first published by
+      Hasbro in 1994 and contains roughly 178,000 words. Use the search and filter controls
+      below to explore words by pattern or length.
+    </p>
+
     <div class="setup-card">
       <h2>Search</h2>
       <input id="query-input" type="text" placeholder='e.g. "qu" or "c_t"'
@@ -125,8 +130,41 @@
     <div class="setup-card">
       <h2>Word Length</h2>
       <div class="length-row">
-        <label>Min <input id="min-len" class="len-input" type="number" min="1" max="25" value="3" /></label>
-        <label>Max <input id="max-len" class="len-input" type="number" min="1" max="25" placeholder="any" /></label>
+        <label>Min
+          <select id="min-len" class="len-input">
+            <option value="3" selected>3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+            <option value="10">10</option>
+            <option value="11">11</option>
+            <option value="12">12</option>
+            <option value="13">13</option>
+            <option value="14">14</option>
+            <option value="15">15</option>
+          </select>
+        </label>
+        <label>Max
+          <select id="max-len" class="len-input">
+            <option value="" selected>Any</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+            <option value="10">10</option>
+            <option value="11">11</option>
+            <option value="12">12</option>
+            <option value="13">13</option>
+            <option value="14">14</option>
+            <option value="15">15</option>
+          </select>
+        </label>
       </div>
     </div>
 

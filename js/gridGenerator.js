@@ -28,31 +28,6 @@ export async function loadDice() {
 }
 
 /**
- * Generate a grid of size rows×cols.
- * Returns a 2D array (rows×cols) of letter strings.
- * Each cell is a letter string (possibly 'Qu').
- */
-export function generateGrid(rows, cols) {
-  if (!DICE) throw new Error('Dice not loaded. Call loadDice() first.');
-  const count = rows * cols;
-  if (count > DICE.length) {
-    throw new Error(`Grid size ${rows}x${cols} requires ${count} dice but only ${DICE.length} available.`);
-  }
-
-  const chosen = shuffle(DICE).slice(0, count);
-
-  // For each die, pick a random face
-  const flat = chosen.map(die => die[Math.floor(Math.random() * die.length)]);
-
-  // Reshape into rows×cols 2D array
-  const grid = [];
-  for (let r = 0; r < rows; r++) {
-    grid.push(flat.slice(r * cols, r * cols + cols));
-  }
-  return grid;
-}
-
-/**
  * Generate a grid of size rows×cols, cycling through all 16 dice as needed.
  * For grids larger than 16 cells (5×5, 6×6), exhausted dice are reshuffled
  * and drawn again without replacement until all cells are filled.
