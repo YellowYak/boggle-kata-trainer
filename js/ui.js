@@ -3,6 +3,8 @@
  * Shared UI helpers used by both katas.js and solver.js.
  */
 
+import { scoreWord } from './gameState.js';
+
 const loadingOverlay = document.getElementById('loading-overlay');
 const loadingMsg     = document.getElementById('loading-msg');
 
@@ -39,5 +41,6 @@ export function setButtonGroupValue(selector, attrName, value) {
 
 /** Generate an anchor tag linking to dictionary.com for a word. */
 export function wordLink(word, cssClass) {
-  return `<a class="result-word ${cssClass}" href="https://www.dictionary.com/browse/${word}?noredirect=true" target="_blank" rel="noopener noreferrer">${word.toUpperCase()}</a>`;
+  const score = scoreWord(word);
+  return `<a class="result-word ${cssClass}" href="https://www.dictionary.com/browse/${word}?noredirect=true" target="_blank" rel="noopener noreferrer" title="Score: ${score}">${word.toUpperCase()}</a>`;
 }
