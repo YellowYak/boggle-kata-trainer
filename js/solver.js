@@ -5,11 +5,10 @@
  */
 
 import { loadWordList, solveGrid } from './wordSolver.js';
-import { scoreWord } from './gameState.js';
+import { scoreWord, SOLVER_SIZES, VALID_MIN_LENGTHS } from './gameState.js';
 import { loadDice, generateGridCyclic } from './gridGenerator.js';
+import { showLoading, hideLoading, bindButtonGroup, setButtonGroupValue, wordLink } from './ui.js';
 
-const loadingOverlay = document.getElementById('loading-overlay');
-const loadingMsg     = document.getElementById('loading-msg');
 const solveBtn       = document.getElementById('solve-btn');
 const solverGrid     = document.getElementById('solver-grid');
 const gridHint       = document.getElementById('grid-hint');
@@ -33,28 +32,6 @@ let currentMinLen = 4;
   loadFromURL();
 })();
 
-function showLoading(msg) {
-  loadingMsg.textContent = msg;
-  loadingOverlay.classList.add('visible');
-}
-
-function hideLoading() {
-  loadingOverlay.classList.remove('visible');
-}
-
-/** Wire up an exclusive toggle button group. `onSelect` receives the clicked button. */
-function bindButtonGroup(selector, onSelect) {
-  const buttons = document.querySelectorAll(selector);
-  buttons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      buttons.forEach(b => { b.classList.remove('selected'); b.setAttribute('aria-pressed', 'false'); });
-      btn.classList.add('selected');
-      btn.setAttribute('aria-pressed', 'true');
-      onSelect(btn);
-    });
-  });
-}
-
 function bindSizeButtons() {
   bindButtonGroup('.size-btn', btn => {
     currentSize = Number(btn.dataset.size);
@@ -73,7 +50,7 @@ function bindMinLenButtons() {
 
 function buildGrid(n) {
   solverGrid.innerHTML = '';
-  solverGrid.style.gridTemplateColumns = `repeat(${n}, 1fr)`;
+  solverGrid.style.gridTemplateColumns = `repeat(${n}, auto)`;
 
   for (let i = 0; i < n * n; i++) {
     const input = document.createElement('input');
@@ -188,25 +165,15 @@ function loadFromURL() {
   if (!gridStr) return;
 
   const n = Math.sqrt(gridStr.length);
-  if (!Number.isInteger(n) || ![4, 5, 6].includes(n)) return;
+  if (!Number.isInteger(n) || !SOLVER_SIZES.includes(n)) return;
 
-  // Activate the correct size button
   currentSize = n;
-  document.querySelectorAll('.size-btn').forEach(btn => {
-    const isMatch = +btn.dataset.size === n;
-    btn.classList.toggle('selected', isMatch);
-    btn.setAttribute('aria-pressed', String(isMatch));
-  });
+  setButtonGroupValue('.size-btn', 'size', n);
 
-  // Activate the correct min-length button (fall back silently if invalid)
   const min = parseInt(minStr, 10);
-  if ([3, 4, 5, 6].includes(min)) {
+  if (VALID_MIN_LENGTHS.includes(min)) {
     currentMinLen = min;
-    document.querySelectorAll('.minlen-btn').forEach(btn => {
-      const isMatch = +btn.dataset.minlen === min;
-      btn.classList.toggle('selected', isMatch);
-      btn.setAttribute('aria-pressed', String(isMatch));
-    });
+    setButtonGroupValue('.minlen-btn', 'minlen', min);
   }
 
   // Rebuild grid for the new size and populate cells
@@ -263,7 +230,7 @@ async function handleSolve() {
 }
 
 function displayResults(wordSet) {
-  // Sort by length ascending, then alphabetically within each length
+  // Sort by score descending, then alphabetically within each score
   const sorted = [...wordSet].sort((a, b) => {
     const scoreDiff = scoreWord(b) - scoreWord(a);
     if (scoreDiff !== 0) return scoreDiff;
@@ -288,9 +255,7 @@ function displayResults(wordSet) {
       rows.push(`<tr><td>${len} letters</td><td>${n} ${n === 1 ? 'word' : 'words'}</td></tr>`);
     }
     lengthBreakdown.innerHTML = `<table class="length-breakdown-table"><tbody>${rows.join('')}</tbody></table>`;
-    resultWords.innerHTML = sorted.map(w =>
-      `<a class="result-word found" href="https://www.dictionary.com/browse/${w}?noredirect=true" target="_blank" rel="noopener noreferrer">${w.toUpperCase()}</a>`
-    ).join('');
+    resultWords.innerHTML = sorted.map(w => wordLink(w, 'found')).join('');
   }
 
   resultsArea.hidden = false;

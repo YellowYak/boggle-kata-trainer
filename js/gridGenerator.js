@@ -6,6 +6,15 @@
 
 let DICE = null; // Array of arrays, each inner array has 6 letter strings
 
+function shuffle(arr) {
+  const result = [...arr];
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
+}
+
 export async function loadDice() {
   if (DICE) return DICE;
   const resp = await fetch('assets/dice.txt');
@@ -30,13 +39,7 @@ export function generateGrid(rows, cols) {
     throw new Error(`Grid size ${rows}x${cols} requires ${count} dice but only ${DICE.length} available.`);
   }
 
-  // Fisher-Yates shuffle, then pick the first `count` dice
-  const shuffled = [...DICE];
-  for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-  }
-  const chosen = shuffled.slice(0, count);
+  const chosen = shuffle(DICE).slice(0, count);
 
   // For each die, pick a random face
   const flat = chosen.map(die => die[Math.floor(Math.random() * die.length)]);
@@ -61,12 +64,7 @@ export function generateGridCyclic(rows, cols) {
   const flat = [];
   while (flat.length < count) {
     const remaining = count - flat.length;
-    const shuffled = [...DICE];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-    }
-    const chosen = shuffled.slice(0, Math.min(remaining, shuffled.length));
+    const chosen = shuffle(DICE).slice(0, Math.min(remaining, DICE.length));
     flat.push(...chosen.map(die => die[Math.floor(Math.random() * die.length)]));
   }
   const grid = [];

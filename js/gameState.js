@@ -42,6 +42,8 @@ export const DIFFICULTY_CONFIG = {
 
 export const VALID_DURATIONS = [15, 30, 60, null]; // null = untimed
 export const VALID_MIN_LENGTHS = [3, 4, 5, 6];
+export const SOLVER_SIZES = [4, 5, 6];
+export const TIMER_URGENT_THRESHOLD = 10; // seconds at which timer turns red
 
 const state = {
   // Setup
