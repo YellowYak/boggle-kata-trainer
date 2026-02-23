@@ -78,6 +78,10 @@ npx serve .
 python -m http.server 8080
 ```
 
+**Live Demo**
+
+https://yellowyak.github.io/boggle-kata-trainer/
+
 ## Boggle Katas Gameplay
 
 1. Choose a **grid size**, **number of solutions**, **minimum word length**, and **duration** on the setup screen.
