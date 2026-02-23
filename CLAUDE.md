@@ -59,3 +59,15 @@ Single CSS file with CSS custom properties for theming (`--bg`, `--surface`, `--
 - Scoring follows standard Boggle rules (defined in `gameState.js`): 1 pt (3–4 letters), 2 pt (5), 3 pt (6), 5 pt (7), 11 pt (8+)
 - Solver supports grid sizes 4×4, 5×5, and 6×6 (`SOLVER_SIZES` in `gameState.js`)
 - Dictionary tool paginates results at 50 words per page and supports starts-with, contains, ends-with, and `_` wildcard search modes
+
+
+## Git Workflow
+
+When asked to commit and push, always:
+
+1) git add relevant files,
+2) write a descriptive commit message,
+3) push to current branch,
+4) report the commit hash.
+
+If a PR is requested, create it immediately after pushing.
